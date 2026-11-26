@@ -35,10 +35,10 @@ function spawnTarget(type) {
     const labelCanvas = document.createElement('canvas'); labelCanvas.width = 128; labelCanvas.height = 128; const ctx = labelCanvas.getContext('2d'); ctx.fillStyle = '#091024'; ctx.beginPath(); ctx.arc(64, 64, 37, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.font = 'bold 63px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(style.label, 64, 65); const tex = new THREE.CanvasTexture(labelCanvas); const icon = new THREE.Mesh(new THREE.PlaneGeometry(.93, .93), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })); icon.position.z = .85; mesh.add(icon);
     mesh.position.set(laneXs[type], 2.7, -38); scene.add(mesh); targets.push({ type, mesh, hit: false, passed: false });
 }
-const HIT_Z = 5, SPAWN_Z = -38, SPEED = 14.5, HIT_WINDOW = 1.9, DURATION = 60;
+const HIT_Z = 5, SPAWN_Z = -38, SPEED = 14.5, HIT_WINDOW = 3.6, PERFECT_WINDOW = 1.6, DURATION = 60;
 const hitRings = {};
 for(const side of ['left','right']){
- const ring=new THREE.Mesh(new THREE.TorusGeometry(1.35,.09,12,64),new THREE.MeshBasicMaterial({color:0x7398bb,transparent:true,opacity:.8,depthTest:false}));
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(1.85,.14,12,64),new THREE.MeshBasicMaterial({color:0x7398bb,transparent:true,opacity:.8,depthTest:false}));
  ring.position.set(laneXs[side],2.7,HIT_Z);ring.renderOrder=5;scene.add(ring);hitRings[side]=ring;
 }
 function updateTiming(){
@@ -55,7 +55,7 @@ function updateTiming(){
  if(!nearest){cue.textContent='等待光球';cue.dataset.state='wait';return;}
  const gap=Math.abs(nearest.mesh.position.z-HIT_Z),side=nearest.type==='left'?'左拳':'右拳';
  cue.dataset.state=gap<HIT_WINDOW?'hit':gap<7?'ready':'wait';
- cue.textContent=gap<.75?`现在！${side} · PERFECT`:gap<HIT_WINDOW?`现在出${side}！`:gap<7?`准备${side}…`:'等球进入击球圈';
+ cue.textContent=gap<PERFECT_WINDOW?`现在！${side} · PERFECT`:gap<HIT_WINDOW?`现在出${side}！`:gap<7?`准备${side}…`:'等球进入击球圈';
 }
 let playing = false, score = 0, combo = 0, misses = 0, startAt = 0, lastFrame = performance.now(), nextBeat = 0, beatIndex = 0, mode = 'keyboard', cameraStream = null, pose = null, detectClock = 0, lastVideoTime = -1, rafId = null, lastMovement = { left: 0, right: 0 }, armState = { left: false, right: false }, feedbackTimer = null, audio = null;
 const BEAT = .6; // 100 BPM
@@ -85,7 +85,7 @@ function flash(label, good = true) { $('feedback').textContent = label; $('feedb
 function burst(position, color) { for (let i = 0; i < 12; i++) { const m = new THREE.Mesh(new THREE.BoxGeometry(.13, .13, .13), new THREE.MeshBasicMaterial({ color })); m.position.copy(position); m.userData.velocity = new THREE.Vector3((Math.random() - .5) * 9, (Math.random() - .1) * 6, (Math.random() - .5) * 6); scene.add(m); particles.push({ mesh: m, life: .45 }); } }
 function action(type) {
     if (!playing) return; const now = performance.now(); if (now - lastMovement[type] < 200) return; lastMovement[type] = now; showMovement(type); $('lastAction').textContent = ({ left: '🥊 左拳', right: '🥊 右拳' })[type]; let match = null, best = 1e10; for (const t of targets) { if (t.hit || t.type !== type) continue; const diff = Math.abs(t.mesh.position.z - HIT_Z); if (diff < HIT_WINDOW && diff < best) { match = t; best = diff; } }
-    if (match) { match.hit = true; let points = best < .75 ? 150 : 100; combo++; score += points + Math.min(combo, 20) * 10; burst(match.mesh.position, styles[type].color); scene.remove(match.mesh); match.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); flash(best < .75 ? 'PERFECT +' + points : 'GREAT +' + points); sfx('hit'); } else { flash('TOO EARLY / LATE', false); combo = 0; sfx('miss'); } updateStats();
+    if (match) { match.hit = true; let points = best < PERFECT_WINDOW ? 150 : 100; combo++; score += points + Math.min(combo, 20) * 10; burst(match.mesh.position, styles[type].color); scene.remove(match.mesh); match.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); flash(best < PERFECT_WINDOW ? 'PERFECT +' + points : 'GREAT +' + points); sfx('hit'); } else { flash('TOO EARLY / LATE', false); combo = 0; sfx('miss'); } updateStats();
 }
 let movementTimer;
 function showMovement(type) {
