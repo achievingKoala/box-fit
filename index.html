@@ -36,6 +36,7 @@
 #standTestPanel{position:fixed;z-index:9;right:20px;top:90px;width:min(380px,calc(100vw - 40px));padding:20px;background:#09172ff2;border:1px solid #43e6cf;border-radius:16px}#standTestPanel[hidden]{display:none}#standTestPanel h2{margin:0 0 10px;font-size:22px}#standTestPanel p{line-height:1.6;font-size:14px}#standTestPanel progress{width:100%;accent-color:#43e6cf}#testResult{font-weight:700;color:#61f5d2}#testMetrics{font-variant-numeric:tabular-nums}.stand-testing .cameraBox,.stand-testing .leftpanel{width:min(430px,85vw)}.stand-testing .cameraBox{height:min(290px,40vh)}.stand-testing #bodyMirror,.stand-testing #timingCue,.stand-testing #postureCue,.stand-testing .gamehint,.stand-testing .hitline{display:none}
 #standTestStart[hidden]{display:none}#standTestStart{display:block;width:100%;margin-top:10px;text-align:center}
 #pauseButton{position:fixed;right:24px;top:88px;z-index:10}#pauseButton[hidden],#pauseOverlay[hidden]{display:none}#pauseOverlay{position:fixed;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;background:#030714bf;backdrop-filter:blur(6px)}#pauseOverlay h2{font-size:32px;margin-top:0}#pauseOverlay p{color:#b9cde3}
+.cameraBox video{opacity:0}
     </style>
 </head>
 
@@ -44,7 +45,7 @@
     <script type="module">
 // BEGIN LEVELS
 const songs = [
- {id:'faded', title:'Faded (Vocal Mix)', artist:'Alan Walker', bpm:90, file:'alan-walker-faded.mp3', standEvery:16, description:'人声电子 · 起立加强训练'},
+ {id:'faded', title:'Faded · 2分30秒训练版', artist:'Alan Walker', bpm:90, file:'alan-walker-faded-150s.m4a', description:'150 秒 · 渐进拳击组合与 12 次起立'},
  {id:'funk', title:'Funk It', artist:'Tobu', bpm:100, file:'tobu-funk-it.mp3', description:'轻快律动 · 左右交替'},
  {id:'back', title:'Back To You', artist:'Tobu', bpm:101, file:'tobu-back-to-you.mp3', description:'旋律训练 · 交替与同手组合'},
  {id:'neon', title:'Neon Pulse', artist:'MotionFit', bpm:100, file:'neon-pulse-100bpm-120s.wav', description:'原创电子 · 两分钟训练'},
@@ -69,6 +70,7 @@ function buildChart(buffer, song) {
   }
   if(score>best){best=score;phase=offset;}
  }
+ if(song.id==='faded')return buildFadedChart(buffer,phase,beat,energies,step);
  const notes=[];
  const patterns=song.id==='back'?['left','right','left','right','left','left','right','right']:['left','right'];
  for(let i=0,time=phase;time<buffer.duration-2;i++,time=phase+i*beat){
@@ -87,6 +89,33 @@ function buildChart(buffer, song) {
   notes.push({time,type:patterns[i%patterns.length]});
  }
  return {notes,phase,beat,duration:buffer.duration};
+}
+
+// Dedicated 150-second progression; all timestamps refer to the edited audio.
+function buildFadedChart(buffer, phase, beat, energies, step) {
+ const notes=[], stands=Array.from({length:12},(_,i)=>40+i*16);
+ const sections=[
+  {name:'热身',start:0,end:24,pattern:['left','right'],stride:2},
+  {name:'左右交替',start:24,end:56,pattern:['left','right'],stride:1},
+  {name:'同手双拳',start:56,end:104,pattern:['left','left','right','right'],stride:1},
+  {name:'组合加强',start:104,end:160,pattern:['left','right','left','left','right','left','right','right'],stride:1},
+  {name:'节奏挑战',start:160,end:208,pattern:['left','right','right','left','right','left','left','right'],stride:1},
+  {name:'放缓收尾',start:208,end:Infinity,pattern:['left','right'],stride:2}
+ ];
+ const duration=Math.min(buffer.duration,150);
+ for(let i=0,time=phase;time<duration-4;i++,time=phase+i*beat){
+  if(time<4)continue;
+  const stand=stands.find(n=>i>=n-1&&i<=n+1);
+  if(stand!==undefined){if(i===stand)notes.push({time,type:'stand'});continue;}
+  const section=sections.find(s=>i>=s.start&&i<s.end);
+  if((i-section.start)%section.stride)continue;
+  const index=Math.floor(time/step);
+  const energy=Math.max(0,...energies.slice(Math.max(0,index-2),index+4).map(e=>e.energy));
+  if(energy<.008)continue;
+  const patternIndex=Math.floor((i-section.start)/section.stride);
+  notes.push({time,type:section.pattern[patternIndex%section.pattern.length]});
+ }
+ return {notes,phase,beat,duration,sections:sections.map(s=>({name:s.name,time:phase+s.start*beat}))};
 }
 
 // END LEVELS
@@ -191,7 +220,7 @@ function readStandTest(p) {
 let selectedSong = songs[0], activeSong = selectedSong, chart = null, noteIndex = 0, musicEpoch = 0;
 let DURATION = 120;
 $('songSelect').innerHTML = songs.map(song => `<option value="${song.id}">${song.title} — ${song.artist}</option>`).join('');
-function updateSong() { selectedSong = songs.find(song => song.id === $('songSelect').value); $('songInfo').textContent = `${selectedSong.bpm} BPM · ${selectedSong.description} · 完整歌曲`; $('songBadge').textContent = `🎵 ${selectedSong.title}`; }
+function updateSong() { selectedSong = songs.find(song => song.id === $('songSelect').value); $('songInfo').textContent = `${selectedSong.bpm} BPM · ${selectedSong.description} · ${selectedSong.id === 'faded' ? '2 分 30 秒训练版' : '完整歌曲'}`; $('songBadge').textContent = `🎵 ${selectedSong.title}`; }
 $('songSelect').onchange = updateSong; updateSong();
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x06091b); scene.fog = new THREE.FogExp2(0x080d25, .024);
 const camera = new THREE.PerspectiveCamera(63, innerWidth / innerHeight, .1, 160); camera.position.set(0, 5.8, 17); camera.lookAt(0, 1, -10);
@@ -378,7 +407,7 @@ async function enableCamera(testOnly = false) {
         if (!navigator.mediaDevices?.getUserMedia) throw Error('浏览器不支持摄像头，或当前页面不是 localhost / HTTPS。');
         cameraStream?.getTracks().forEach(track => track.stop()); pose?.close();
         cameraStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' } });
-        const v = $('camera'); v.srcObject = cameraStream; await v.play(); $('cameraTitle').textContent = 'LOADING AI…'; btn.textContent = '正在加载姿态模型…';
+        const v = $('camera'); v.srcObject = cameraStream; await v.play(); $('skeleton').width = v.videoWidth; $('skeleton').height = v.videoHeight; $('cameraTitle').textContent = 'LOADING AI…'; btn.textContent = '正在加载姿态模型…';
         showLoading('正在准备 AI 识别引擎', null, '首次启动需要加载 WASM 并初始化');
         await paintLoading();
         const vision = await FilesetResolver.forVisionTasks(resourceURL('mediapipe/wasm'));
@@ -399,6 +428,50 @@ $('demoStart').onclick = () => beginGame('keyboard');
 document.addEventListener('keydown', e => { if (playing && ['KeyP', 'Escape'].includes(e.code)) { e.preventDefault(); if (!e.repeat) togglePause(); return; } if (playing && ['Space', 'KeyJ', 'KeyL', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (e.repeat) return; if (e.code === 'Space') action('stand'); if (e.code === 'KeyJ' || e.code === 'ArrowLeft') action('left'); if (e.code === 'KeyL' || e.code === 'ArrowRight') action('right'); });
 const mirror = $('bodyMirror'), mirrorContext = mirror.getContext('2d'), mirrorDraw = new DrawingUtils(mirrorContext);
 const canvas = $('skeleton'), cctx = canvas.getContext('2d'), draw = new DrawingUtils(cctx);
+const faceAvatar = new Image();
+faceAvatar.src = resourceURL('images/raccoon-avatar.png');
+function drawMaskedCamera(video, points) {
+    // Never expose a raw frame without a reliable face position.
+    cctx.clearRect(0, 0, canvas.width, canvas.height);
+    const face = points.slice(0, 11).filter(p => (p.visibility ?? 0) > .5 && p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1);
+    if (face.length < 3 || !faceAvatar.complete || !faceAvatar.naturalWidth) return;
+    const xs = face.map(p => p.x * canvas.width), ys = face.map(p => p.y * canvas.height);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const shoulders = Math.hypot((points[11].x - points[12].x) * canvas.width, (points[11].y - points[12].y) * canvas.height);
+    const size = Math.max(52, (Math.max(...xs) - Math.min(...xs)) * 2.5, (Math.max(...ys) - Math.min(...ys)) * 3, shoulders * .95);
+    cctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const bodyConnections = PoseLandmarker.POSE_CONNECTIONS.filter(edge => edge.start >= 11 && edge.end >= 11);
+    draw.drawConnectors(points, bodyConnections, {color: '#28f4df', lineWidth: 3});
+    draw.drawLandmarks(points.slice(11), {color: '#f9fbff', radius: 2.3});
+    // Solid backing covers the face beneath the avatar's transparent edges.
+    cctx.fillStyle = '#14233b'; cctx.beginPath(); cctx.ellipse(cx, cy, size * .41, size * .44, 0, 0, Math.PI * 2); cctx.fill();
+    cctx.drawImage(faceAvatar, cx - size / 2, cy - size / 2, size, size);
+}
+
+function drawStickFigure(points) {
+    const ctx = mirrorContext, w = mirror.width, h = mirror.height;
+    const visible = p => p && (p.visibility ?? 0) > .5 && p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1;
+    const pixel = p => ({x: p.x * w, y: p.y * h});
+    const midpoint = (a, b) => ({x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, visibility: Math.min(a.visibility ?? 0, b.visibility ?? 0)});
+    ctx.save(); ctx.strokeStyle = '#28f4df'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const line = (a, b) => { if (!visible(a) || !visible(b)) return; const start = pixel(a), end = pixel(b); ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke(); };
+    // Preserve the original body, arms and hands; replace only the face.
+    const bodyConnections = PoseLandmarker.POSE_CONNECTIONS.filter(edge => edge.start >= 11 && edge.end >= 11);
+    mirrorDraw.drawConnectors(points, bodyConnections, {color: '#28f4df', lineWidth: 5});
+    const bodyPoints = points.slice(11);
+    mirrorDraw.drawLandmarks(bodyPoints, {color: '#ffffff', radius: 4, visibilityMin: .5});
+    if (visible(points[11]) && visible(points[12])) {
+        const shoulders = midpoint(points[11], points[12]);
+        const shoulderPx = pixel(shoulders), left = pixel(points[11]), right = pixel(points[12]);
+        const radius = Math.max(12, Math.min(48, Math.hypot(left.x - right.x, left.y - right.y) * .24));
+        const head = visible(points[0]) ? pixel(points[0]) : {x: shoulderPx.x, y: shoulderPx.y - radius * 2.1};
+        const dx = shoulderPx.x - head.x, dy = shoulderPx.y - head.y, length = Math.hypot(dx, dy) || 1;
+        ctx.beginPath(); ctx.moveTo(head.x + dx / length * radius, head.y + dy / length * radius); ctx.lineTo(shoulderPx.x, shoulderPx.y); ctx.stroke();
+        ctx.beginPath(); ctx.arc(head.x, head.y, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+}
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 function angle(a, b, c) { const u = [a.x - b.x, a.y - b.y], v = [c.x - b.x, c.y - b.y]; const dot = u[0] * v[0] + u[1] * v[1]; return Math.acos(THREE.MathUtils.clamp(dot / (Math.hypot(...u) * Math.hypot(...v) + 1e-8), -1, 1)) * 180 / Math.PI; }
 let prevWrist = { left: null, right: null }, prevTime = 0;
@@ -456,7 +529,7 @@ function processCamera(now) {
     detectClock = now; lastVideoTime = v.currentTime;
     try {
         const result = pose.detectForVideo(v, now); cctx.clearRect(0, 0, canvas.width, canvas.height); mirrorContext.clearRect(0, 0, 640, 480); mirror.style.opacity = '0';
-        if (result.landmarks.length) { const points = result.landmarks[0]; mirror.style.opacity = '.7'; mirrorDraw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 5 }); mirrorDraw.drawLandmarks(points, { color: '#ffffff', radius: 4 }); draw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 3 }); draw.drawLandmarks(points, { color: '#f9fbff', radius: 2.3 }); readPose(points, now); setStatus('已检测到人体 · 跟随节拍左右出拳', true); }
+        if (result.landmarks.length) { const points = result.landmarks[0]; mirror.style.opacity = '.7'; drawStickFigure(points); drawMaskedCamera(v, points); readPose(points, now); setStatus('已检测到人体 · 跟随节拍左右出拳', true); }
         else { if (standTesting) { if (testCalibrating) { seatSamples = 0; seatedUpper = null; } $('testResult').textContent = '未检测到身体，请回到镜头内'; } prevTime = 0; standFrames = 0; $('postureCue').textContent = '未检测到身体 · 请回到镜头内'; setStatus('请让头、肩膀和双手回到镜头内'); armState.left = false; armState.right = false; prevWrist.left = null; prevWrist.right = null; }
     } catch (e) { console.warn('Pose detection error', e); setStatus('姿态识别暂时失败'); }
 }
