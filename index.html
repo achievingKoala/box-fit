@@ -6,12 +6,417 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MotionFit · Neon Arena</title>
     <meta name="theme-color" content="#070b1a" />
-    <link rel="stylesheet" href="./src/style.css" />
+    <style>
+
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:#edf7ff;background:#060917;font-synthesis:none}*{box-sizing:border-box}body{margin:0;overflow:hidden}button{font:inherit;cursor:pointer}#app,#scene{width:100vw;height:100dvh}#scene{position:fixed;inset:0;display:block}.vignette{pointer-events:none;position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 34%,rgba(2,3,15,.65) 100%)}.topbar{position:fixed;top:0;left:0;right:0;padding:22px clamp(16px,4vw,54px);display:flex;align-items:flex-start;justify-content:space-between;gap:14px;background:linear-gradient(#050919d9,transparent)}.brand{font-family:system-ui,sans-serif;font-weight:800;font-size:clamp(18px,2vw,26px);letter-spacing:2px}.brand span{color:#3df9e0}.subbrand{font-size:10px;letter-spacing:3px;color:#99a9c8;margin-top:4px}.stats{display:flex;gap:clamp(10px,3vw,36px);align-items:center}.stat{min-width:70px;text-align:center}.stat label{display:block;font-size:10px;letter-spacing:2px;color:#91a6c5}.stat strong{font:700 clamp(18px,2.5vw,32px) system-ui,sans-serif}.stat.combo strong{color:#ffe475}.stat.time strong{color:#42eddc}.gamehint{position:fixed;top:122px;left:50%;transform:translateX(-50%);text-align:center;font-size:12px;color:#8fa6c7;letter-spacing:2px;white-space:nowrap}.hitline{position:fixed;bottom:18%;left:50%;transform:translateX(-50%);font:600 12px system-ui,sans-serif;color:#7fe4ff9b;letter-spacing:4px;pointer-events:none}.bottom{position:fixed;bottom:25px;left:clamp(16px,4vw,54px);right:clamp(16px,4vw,54px);display:flex;align-items:end;justify-content:space-between;gap:16px;pointer-events:none}.leftpanel{width:215px;pointer-events:auto}.cameraBox{width:215px;height:145px;position:relative;overflow:hidden;border:1px solid #53c9e27d;border-radius:14px;background:#0a1426bb;box-shadow:0 0 40px #04c8e019}.cameraBox video,.cameraBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}.cameraBox video{opacity:.5}.cameraTitle{position:absolute;left:10px;top:10px;border-radius:20px;padding:4px 8px;background:#061425d9;font-size:9px;color:#a8fdf4}.status{display:flex;gap:7px;align-items:center;margin-top:8px;font-size:11px;color:#b7c9df}.dot{height:7px;width:7px;border-radius:50%;background:#f6a648}.dot.good{background:#4dfad7;box-shadow:0 0 10px #4dfad7}.instructions{font-size:12px;color:#a4b5d5;text-align:right;line-height:1.9}.key{display:inline-block;border:1px solid #7288a8;border-radius:5px;padding:0 6px;color:white;background:#1c2a48}.overlay{position:fixed;inset:0;background:#030714b7;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)}.overlay.hidden{display:none}.modal{border:1px solid #5b82ad75;background:linear-gradient(145deg,#101b37f5,#080e20f5);box-shadow:0 18px 100px #000a,0 0 80px #0ac5eb18;border-radius:24px;padding:clamp(24px,4vw,48px);max-width:560px;width:100%;text-align:center}.eyebrow{color:#47e9d8;font:600 11px system-ui,sans-serif;letter-spacing:4px}.modal h1{font:800 clamp(26px,5vw,45px) system-ui,sans-serif;margin:16px 0}.modal h1 span{color:#43f2da}.modal p{color:#acbad4;line-height:1.85;font-size:14px}.features{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:23px 0}.features span{border:1px solid #45617f;padding:7px 12px;border-radius:40px;font-size:12px;color:#d1e5fa}.primary{background:linear-gradient(110deg,#3cf4da,#26b8fb);color:#061124;border:0;padding:15px 24px;border-radius:12px;font-weight:800;box-shadow:0 5px 27px #12d6e53c;min-width:190px}.primary:hover{filter:brightness(1.12)}.secondary{border:1px solid #5a85a0;background:#15243e;color:#d3e7fb;padding:12px 18px;border-radius:12px}.actions{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}.smallprint{font-size:11px!important;margin-bottom:0}.feedback{position:fixed;top:27%;left:50%;transform:translateX(-50%);font:800 clamp(24px,5vw,52px) system-ui,sans-serif;color:#fff;text-shadow:0 0 25px #43f4e8;opacity:0;transition:opacity .13s;pointer-events:none}.feedback.show{opacity:1}.progress{height:3px;position:fixed;top:0;left:0;background:linear-gradient(90deg,#34f0d6,#6b90ff);width:0}.error{color:#ffa9ad!important}@media(max-width:650px){.topbar{padding:16px}.brand{font-size:15px}.stats{gap:8px}.stat{min-width:52px}.stat strong{font-size:17px}.stat label{font-size:8px}.subbrand{font-size:8px}.bottom{bottom:10px;left:10px;right:10px}.cameraBox,.leftpanel{width:145px}.cameraBox{height:110px}.instructions{font-size:10px}.gamehint{top:86px;font-size:10px}.hitline{bottom:22%}}
+
+#bodyMirror{position:fixed;left:50%;top:24%;width:min(48vw,560px);height:auto;transform:translateX(-50%) scaleX(-1);pointer-events:none;opacity:0;filter:drop-shadow(0 0 9px #28f4df)}
+#movementEcho{position:fixed;top:42%;left:50%;transform:translateX(-50%) scale(.8);opacity:0;pointer-events:none;font-size:clamp(24px,5vw,48px);font-weight:800;color:#fff;text-shadow:0 0 24px #28f4df;transition:opacity .12s,transform .12s}
+#movementEcho.active{opacity:1;transform:translateX(-50%) scale(1.1)}
+#movementEcho.left{left:28%;color:#32f4e1}#movementEcho.right{left:72%;color:#fc6be6}#movementEcho.squat{top:60%;color:#ffd065}
+
+#timingCue{position:fixed;left:50%;top:19%;transform:translateX(-50%);padding:10px 22px;border:1px solid #7398bb;border-radius:30px;background:#081326dd;color:#b4cbe1;font-size:clamp(16px,2.5vw,26px);font-weight:800;pointer-events:none;white-space:nowrap}
+#timingCue[data-state="ready"]{color:#ffd34d;border-color:#ffd34d}
+#timingCue[data-state="hit"]{color:#4dff81;border-color:#4dff81;box-shadow:0 0 30px #4dff8166}
+.hitline{font-family:inherit;letter-spacing:1px;width:90%;text-align:center;color:#c2d6ea}
+
+#postureCue{position:fixed;top:14%;left:50%;transform:translateX(-50%);font-size:14px;color:#bdf7e5;background:#081326dd;padding:7px 14px;border-radius:16px;pointer-events:none;text-align:center;max-width:90vw}
+
+#standCue{position:fixed;top:32%;left:50%;transform:translateX(-50%);z-index:8;width:max-content;max-width:90vw;text-align:center;font-size:clamp(23px,4vw,44px);font-weight:900;padding:18px 28px;border-radius:20px;background:#071322ee;border:3px solid #ffd34d;color:#ffd34d;box-shadow:0 0 45px #ffd34d55;pointer-events:none}
+#standCue:empty{display:none}
+#standCue[data-state="go"]{color:#4dff81;border-color:#4dff81;box-shadow:0 0 55px #4dff8188;animation:standPulse .5s ease-in-out infinite alternate}
+#standCue[data-state="done"]{color:#bdf7e5;border-color:#51ead4}
+@keyframes standPulse{to{transform:translateX(-50%) scale(1.05)}}
+@media(prefers-reduced-motion:reduce){#standCue[data-state="go"]{animation:none}}
+
+.song-picker{text-align:left;margin:18px 0}.song-picker label{display:block;font-size:13px;color:#b8c9e3;margin-bottom:8px}.song-picker select{width:100%;padding:12px;border-radius:10px;background:#13233b;color:#fff;border:1px solid #51ead4;font:inherit}.song-picker p{font-size:12px;margin:7px 0}.overlay{overflow-y:auto}.modal{margin:auto}
+
+#loadingPanel{margin:18px 0 0;padding:14px;text-align:left;border:1px solid #426786;border-radius:12px;background:#071326}
+#loadingPanel[hidden]{display:none}#loadingLabel{color:#c5f9f2;font-size:13px}#loadingDetail{font-size:11px;color:#9db4d1;margin-top:7px}#loadingBar{display:block;width:100%;height:12px;margin-top:10px;accent-color:#3cebd5}button:disabled{opacity:.55;cursor:wait}
+    </style>
 </head>
 
 <body>
     <div id="app"></div>
-    <script type="module" src="./src/main.js"></script>
+    <script type="module">
+// BEGIN LEVELS
+const songs = [
+ {id:'faded', title:'Faded (Vocal Mix)', artist:'Alan Walker', bpm:90, file:'alan-walker-faded.mp3', standEvery:16, description:'人声电子 · 起立加强训练'},
+ {id:'funk', title:'Funk It', artist:'Tobu', bpm:100, file:'tobu-funk-it.mp3', description:'轻快律动 · 左右交替'},
+ {id:'back', title:'Back To You', artist:'Tobu', bpm:101, file:'tobu-back-to-you.mp3', description:'旋律训练 · 交替与同手组合'},
+ {id:'neon', title:'Neon Pulse', artist:'MotionFit', bpm:100, file:'neon-pulse-100bpm-120s.wav', description:'原创电子 · 两分钟训练'},
+];
+
+// Locate the beat phase in the supplied recording rather than assuming a beat at t=0.
+function buildChart(buffer, song) {
+ const step=.01, data=buffer.getChannelData(0), rate=buffer.sampleRate;
+ const energies=[];let previous=0;
+ for(let t=0;t<buffer.duration;t+=step){
+  let energy=0,count=0;
+  for(let i=Math.floor(t*rate);i<Math.min(data.length,(t+step)*rate);i+=4){energy+=data[i]*data[i];count++;}
+  const rms=Math.sqrt(energy/Math.max(count,1));
+  energies.push({energy:rms,onset:Math.max(0,rms-previous)});previous=rms;
+ }
+ const beat=60/song.bpm;
+ let phase=0,best=-Infinity;
+ for(let offset=0;offset<beat;offset+=step){
+  let score=0;
+  for(let t=offset;t<Math.min(buffer.duration,120);t+=beat){
+   const i=Math.round(t/step);score+=Math.max(...energies.slice(Math.max(0,i-1),i+2).map(e=>e.onset),0);
+  }
+  if(score>best){best=score;phase=offset;}
+ }
+ const notes=[];
+ const patterns=song.id==='back'?['left','right','left','right','left','left','right','right']:['left','right'];
+ for(let i=0,time=phase;time<buffer.duration-2;i++,time=phase+i*beat){
+  if(time<3)continue;
+  const standEvery=song.standEvery??32;
+  const position=i%standEvery;
+  const standPosition=standEvery/2;
+  // Leave two beats before and three beats after standing clear.
+  if(i>=standEvery&&position>=standPosition-2&&position<=standPosition+3){
+   if(position===standPosition)notes.push({time,type:'stand'});
+   continue;
+  }
+  const index=Math.floor(time/step);
+  const energy=Math.max(0,...energies.slice(Math.max(0,index-2),index+4).map(e=>e.energy));
+  if(energy<.008||time<12&&i%2)continue;
+  notes.push({time,type:patterns[i%patterns.length]});
+ }
+ return {notes,phase,beat,duration:buffer.duration};
+}
+
+// END LEVELS
+
+import * as THREE from './vendor/three/three.module.js';
+import { FilesetResolver, PoseLandmarker, DrawingUtils } from './vendor/mediapipe/vision_bundle.mjs';
+
+
+
+const app = document.querySelector('#app');
+app.innerHTML = `
+<canvas id="scene"></canvas><div class="vignette"></div><div class="progress" id="progress"></div>
+<header class="topbar"><div><div class="brand">MOTION<span>FIT</span></div><div class="subbrand">NEON RHYTHM ARENA · MVP</div></div>
+<div class="stats"><div class="stat"><label>SCORE</label><strong id="score">00000</strong></div><div class="stat combo"><label>COMBO</label><strong id="combo">0×</strong></div><div class="stat time"><label>TIME</label><strong id="time">120</strong></div></div></header>
+<canvas id="bodyMirror" width="640" height="480"></canvas><div id="movementEcho"></div><div class="gamehint">跟随光球节奏 · 左右出拳 · ↑ 跟随提示完成起立</div>
+<div class="feedback" id="feedback">PERFECT!</div><div class="hitline">球进入圆圈时出拳 · 黄色准备 / 绿色出拳</div><div id="standCue" role="status" aria-live="polite"></div><div id="postureCue">坐稳后开始 · 站立识别待校准</div><div id="timingCue">等待光球</div>
+<div class="bottom"><div class="leftpanel"><div class="cameraBox"><video id="camera" autoplay muted playsinline></video><canvas id="skeleton" width="430" height="290"></canvas><span class="cameraTitle" id="cameraTitle">CAMERA OFF</span></div><div class="status"><span class="dot" id="dot"></span><span id="status">等待开始</span></div></div><div class="instructions">左拳 <span class="key">J</span>　右拳 <span class="key">L</span><br>↑ 站立 <span class="key">SPACE</span><br><span id="lastAction">准备就绪</span></div></div>
+<div class="overlay" id="overlay"><div class="modal"><div class="eyebrow">YOUR BODY IS THE CONTROLLER</div><h1 id="modalTitle">MOVE. PUNCH.<br><span>LEVEL UP.</span></h1><p id="modalText">开启摄像头，用真实身体动作击中光球。坐着跟随音乐出拳；看到 ↑ 音符时完成起立动作，选择歌曲，开始完整音乐训练。</p><div class="features"><span>🥊 左 / 右挥拳</span><span>🪑 坐姿游玩</span><span>⚡ 连击加分</span><span id="songBadge">🎵 选择训练歌曲</span></div><div class="song-picker"><label for="songSelect">选择歌曲 / 关卡</label><select id="songSelect"></select><p id="songInfo"></p></div><div class="actions"><button class="primary" id="cameraStart">📷 摄像头开始</button><button class="secondary" id="demoStart">⌨ 键盘试玩</button></div><div id="loadingPanel" hidden aria-live="polite"><div id="loadingLabel"></div><progress id="loadingBar" max="100" aria-label="当前步骤加载进度"></progress><div id="loadingDetail"></div></div><p class="smallprint" id="modalNote">建议 Chrome / Edge 桌面浏览器，开始时请坐稳一秒校准，让头、肩膀和双手入镜。起立通过头肩一起上移判断，请保持摄像头固定，起立后双肩仍需入镜，头部可以出画。视频只在本机处理，不上传服务器。</p></div></div>`;
+
+const $ = id => document.getElementById(id);
+function showLoading(label, percent = null, detail = '') {
+    $('loadingPanel').hidden = false;
+    $('loadingLabel').textContent = label;
+    $('loadingDetail').textContent = detail;
+    if (percent === null) $('loadingBar').removeAttribute('value');
+    else $('loadingBar').value = percent;
+}
+function lockStart(locked) {
+    for (const id of ['songSelect', 'cameraStart', 'demoStart']) $(id).disabled = locked;
+}
+const paintLoading = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+async function fetchWithProgress(url, label) {
+    showLoading(label, null, '正在连接…');
+    const response = await fetch(url);
+    if (!response.ok) throw Error(`${label}失败（HTTP ${response.status}）`);
+    const total = Number(response.headers.get('content-length'));
+    const reader = response.body?.getReader();
+    if (!reader) return new Uint8Array(await response.arrayBuffer());
+    const chunks = []; let loaded = 0;
+    while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        chunks.push(value); loaded += value.byteLength;
+        const known = total > 0 && !response.headers.get('content-encoding');
+        const percent = known ? Math.min(100, loaded / total * 100) : null;
+        showLoading(label, percent, `${(loaded / 1048576).toFixed(1)} MB${known ? ` / ${(total / 1048576).toFixed(1)} MB · ${Math.floor(percent)}%` : ' 已下载'}`);
+    }
+    const bytes = new Uint8Array(loaded); let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    showLoading(label, 100, '下载完成');
+    return bytes;
+}
+let cameraPreparing = false;
+let selectedSong = songs[0], activeSong = selectedSong, chart = null, noteIndex = 0, musicEpoch = 0;
+let DURATION = 120;
+$('songSelect').innerHTML = songs.map(song => `<option value="${song.id}">${song.title} — ${song.artist}</option>`).join('');
+function updateSong() { selectedSong = songs.find(song => song.id === $('songSelect').value); $('songInfo').textContent = `${selectedSong.bpm} BPM · ${selectedSong.description} · 完整歌曲`; $('songBadge').textContent = `🎵 ${selectedSong.title}`; }
+$('songSelect').onchange = updateSong; updateSong();
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x06091b); scene.fog = new THREE.FogExp2(0x080d25, .024);
+const camera = new THREE.PerspectiveCamera(63, innerWidth / innerHeight, .1, 160); camera.position.set(0, 5.8, 17); camera.lookAt(0, 1, -10);
+const renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: true, alpha: false }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); renderer.outputColorSpace = THREE.SRGBColorSpace;
+scene.add(new THREE.AmbientLight(0x6e9cbb, 1.15));
+const lamp = new THREE.PointLight(0x26e6e3, 48, 42); lamp.position.set(-6, 7, 0); scene.add(lamp);
+const lamp2 = new THREE.PointLight(0xab46ff, 48, 42); lamp2.position.set(6, 6, -12); scene.add(lamp2);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 100), new THREE.MeshStandardMaterial({ color: 0x0b1631, metalness: .65, roughness: .4 })); floor.rotation.x = -Math.PI / 2; floor.position.z = -15; scene.add(floor);
+const grid = new THREE.GridHelper(70, 42, 0x25a5bb, 0x153456); grid.position.y = .025; grid.position.z = -18; scene.add(grid);
+for (let i = 0; i < 19; i++) { const z = 5 - i * 3.3; for (const s of [-1, 1]) { const pillar = new THREE.Mesh(new THREE.BoxGeometry(.22, 5.8, .22), new THREE.MeshStandardMaterial({ color: 0x132c57, emissive: i % 2 ? 0x361477 : 0x006c77, emissiveIntensity: .75 })); pillar.position.set(s * 7, 2.9, z); scene.add(pillar); const light = new THREE.Mesh(new THREE.BoxGeometry(.4, .09, .4), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xab56ff : 0x31ffee })); light.position.set(s * 7, 5.65, z); scene.add(light); } }
+for (const x of [-3.2, 0, 3.2]) { const strip = new THREE.Mesh(new THREE.BoxGeometry(.075, .025, 78), new THREE.MeshBasicMaterial({ color: x === 0 ? 0x268ba4 : 0x134c70 })); strip.position.set(x, .05, -21); scene.add(strip); }
+const portalGroup = new THREE.Group(); for (let i = 0; i < 9; i++) { const arch = new THREE.Mesh(new THREE.TorusGeometry(6.9, .055, 6, 40, Math.PI), new THREE.MeshBasicMaterial({ color: i % 2 ? 0x622bcc : 0x0c9ab8, transparent: true, opacity: .5 })); arch.rotation.z = Math.PI / 2; arch.rotation.y = Math.PI / 2; arch.position.set(0, 2.3, -9 - i * 8); portalGroup.add(arch); } scene.add(portalGroup);
+const laneXs = { left: -3.2, right: 3.2, stand: 0 };
+const styles = { left: { color: 0x32f4e1, label: 'L' }, right: { color: 0xfc6be6, label: 'R' }, stand: { color: 0xffd065, label: '↑' } };
+let targets = [], particles = [];
+function spawnTarget(type) {
+    const style = styles[type]; const mesh = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.81, 1), new THREE.MeshStandardMaterial({ color: style.color, emissive: style.color, emissiveIntensity: 1.8, roughness: .14, metalness: .15 })); mesh.add(core);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.22, .055, 8, 40), new THREE.MeshBasicMaterial({ color: style.color })); mesh.add(ring);
+    const labelCanvas = document.createElement('canvas'); labelCanvas.width = 128; labelCanvas.height = 128; const ctx = labelCanvas.getContext('2d'); ctx.fillStyle = '#091024'; ctx.beginPath(); ctx.arc(64, 64, 37, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.font = 'bold 63px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(style.label, 64, 65); const tex = new THREE.CanvasTexture(labelCanvas); const icon = new THREE.Mesh(new THREE.PlaneGeometry(.93, .93), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })); icon.position.z = .85; mesh.add(icon);
+    mesh.position.set(laneXs[type], 2.7, -38); scene.add(mesh); targets.push({ type, mesh, hit: false, passed: false });
+}
+const HIT_Z = 5, SPAWN_Z = -38, SPEED = 14.5, HIT_WINDOW = 3.6, PERFECT_WINDOW = 1.6;
+const hitRings = {};
+for (const side of ['left', 'right', 'stand']) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.85, .14, 12, 64), new THREE.MeshBasicMaterial({ color: 0x7398bb, transparent: true, opacity: .8, depthTest: false }));
+    ring.position.set(laneXs[side], 2.7, HIT_Z); ring.renderOrder = 5; scene.add(ring); hitRings[side] = ring;
+}
+function updateStandCue() {
+    const cue = $('standCue');
+    const note = targets.find(t => t.type === 'stand' && !t.hit && !t.passed);
+    if (note) {
+        const distance = HIT_Z - note.mesh.position.z;
+        if (Math.abs(distance) < hitWindow('stand')) { cue.textContent = '↑ 现在站起来！'; cue.dataset.state = 'go'; return; }
+        if (distance > 0 && distance / SPEED <= 2.4) {
+            cue.textContent = `↑ 准备起立 · ${Math.max(1, Math.ceil((distance - hitWindow('stand')) / SPEED))} 秒后`;
+            cue.dataset.state = 'prepare'; return;
+        }
+    }
+    if (performance.now() < standCompleteUntil) { cue.textContent = '✓ 起立动作完成 · 继续出拳'; cue.dataset.state = 'done'; return; }
+    cue.textContent = ''; cue.dataset.state = '';
+}
+function updateTiming() {
+    updateStandCue();
+    let nearest = null;
+    for (const side of ['left', 'right', 'stand']) {
+        const target = targets.filter(t => !t.hit && !t.passed && t.type === side).sort((a, b) => Math.abs(a.mesh.position.z - HIT_Z) - Math.abs(b.mesh.position.z - HIT_Z))[0];
+        const gap = target ? Math.abs(target.mesh.position.z - HIT_Z) : Infinity;
+        const color = gap < hitWindow(side) ? 0x4dff81 : gap < 7 ? 0xffd34d : 0x7398bb;
+        hitRings[side].material.color.setHex(color);
+        hitRings[side].scale.setScalar(gap < hitWindow(side) ? 1.12 : 1);
+        if (target && (!nearest || gap < Math.abs(nearest.mesh.position.z - HIT_Z))) nearest = target;
+    }
+    const cue = $('timingCue');
+    if (!nearest) { cue.textContent = '等待光球'; cue.dataset.state = 'wait'; return; }
+    const gap = Math.abs(nearest.mesh.position.z - HIT_Z), side = nearest.type === 'stand' ? '站起来' : nearest.type === 'left' ? '左拳' : '右拳', window = hitWindow(nearest.type);
+    cue.dataset.state = gap < window ? 'hit' : gap < 7 ? 'ready' : 'wait';
+    cue.textContent = gap < PERFECT_WINDOW ? `现在！${side} · PERFECT` : gap < window ? `现在：${side}！` : gap < (nearest.type === 'stand' ? 30 : 7) ? `准备${side}…` : '等球进入击球圈';
+}
+let playing = false, score = 0, combo = 0, misses = 0, startAt = 0, lastFrame = performance.now(), nextBeat = 0, beatIndex = 0, mode = 'keyboard', cameraStream = null, pose = null, detectClock = 0, lastVideoTime = -1, rafId = null, lastMovement = { left: 0, right: 0, stand: 0 }, armState = { left: false, right: false }, feedbackTimer = null, audio = null;
+const hitWindow = type => type === 'stand' ? 22 : HIT_WINDOW;
+let standCompleteUntil = 0;
+let seatedUpper = null, seatSamples = 0, standAttemptNote = null, standBaseline = null, standFrames = 0;
+let musicNodes = [];
+let musicGain = null; const MUSIC_VOLUME = .42;
+function stopMusic() { for (const node of musicNodes) { try { node.stop(); } catch { } } musicNodes = []; }
+let musicBuffer; const musicCache = new Map();
+async function prepareMusic() {
+    audio ??= new (window.AudioContext || window.webkitAudioContext)();
+    await audio.resume();
+    if (!musicCache.has(activeSong.id)) {
+        const bytes = await fetchWithProgress(new URL(`./public/audio/${activeSong.file}`, import.meta.url), '正在下载音乐');
+        showLoading('正在解码音乐', null, '首次加载完整歌曲可能需要几秒');
+        await paintLoading();
+        musicCache.set(activeSong.id, await audio.decodeAudioData(bytes.buffer));
+    }
+    musicBuffer = musicCache.get(activeSong.id);
+    showLoading('正在生成节奏谱面', null, '正在分析歌曲节拍…');
+    await paintLoading();
+    chart = buildChart(musicBuffer, activeSong); noteIndex = 0;
+    DURATION = chart.duration + (HIT_Z - SPAWN_Z) / SPEED;
+
+}
+function startMusic() {
+    stopMusic();
+    const source = audio.createBufferSource(), gain = audio.createGain();
+    source.buffer = musicBuffer; musicGain = gain; gain.gain.value = MUSIC_VOLUME; source.connect(gain).connect(audio.destination);
+    musicEpoch = audio.currentTime + .1;
+    source.start(musicEpoch + (HIT_Z - SPAWN_Z) / SPEED); musicNodes.push(source);
+
+}
+function sfx(type) {
+    if (!audio) return;
+    const t = audio.currentTime, hit = type === 'hit';
+    if (hit && musicGain) {
+        // Briefly make room for the hit without shifting the song's playback clock.
+        const gain = musicGain.gain;
+        gain.cancelScheduledValues(t); gain.setValueAtTime(gain.value, t);
+        gain.linearRampToValueAtTime(MUSIC_VOLUME * .42, t + .008);
+        gain.linearRampToValueAtTime(MUSIC_VOLUME, t + .16);
+    }
+    const osc = audio.createOscillator(), envelope = audio.createGain();
+    osc.type = hit ? 'triangle' : 'sine';
+    osc.frequency.setValueAtTime(hit ? 1450 : 150, t);
+    osc.frequency.exponentialRampToValueAtTime(hit ? 360 : 65, t + .10);
+    envelope.gain.setValueAtTime(.001, t);
+    envelope.gain.linearRampToValueAtTime(hit ? .32 : .08, t + .003);
+    envelope.gain.exponentialRampToValueAtTime(.001, t + .15);
+    osc.connect(envelope).connect(audio.destination); osc.start(t); osc.stop(t + .16);
+    osc.onended = () => { osc.disconnect(); envelope.disconnect(); };
+    if (hit) {
+        const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * .055), audio.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++)data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audio.sampleRate * .009));
+        const snap = audio.createBufferSource(), filter = audio.createBiquadFilter(), volume = audio.createGain();
+        snap.buffer = buffer; filter.type = 'highpass'; filter.frequency.value = 1800; volume.gain.value = .24;
+        snap.connect(filter).connect(volume).connect(audio.destination); snap.start(t);
+        snap.onended = () => { snap.disconnect(); filter.disconnect(); volume.disconnect(); };
+    }
+}
+
+function flash(label, good = true) { $('feedback').textContent = label; $('feedback').style.color = good ? '#ffffff' : '#ff839b'; $('feedback').classList.add('show'); clearTimeout(feedbackTimer); feedbackTimer = setTimeout(() => $('feedback').classList.remove('show'), 300); }
+function burst(position, color) { for (let i = 0; i < 12; i++) { const m = new THREE.Mesh(new THREE.BoxGeometry(.13, .13, .13), new THREE.MeshBasicMaterial({ color })); m.position.copy(position); m.userData.velocity = new THREE.Vector3((Math.random() - .5) * 9, (Math.random() - .1) * 6, (Math.random() - .5) * 6); scene.add(m); particles.push({ mesh: m, life: .45 }); } }
+function action(type) {
+    if (!playing) return; const now = performance.now(); if (now - lastMovement[type] < 200) return; lastMovement[type] = now; showMovement(type); $('lastAction').textContent = ({ left: '🥊 左拳', right: '🥊 右拳', stand: '✓ 起立动作' })[type]; let match = null, best = 1e10; for (const t of targets) { if (t.hit || t.type !== type) continue; const diff = Math.abs(t.mesh.position.z - HIT_Z); if (!t.passed && (type === 'stand' ? t.mesh.position.z >= HIT_Z - SPEED * 2.4 && t.mesh.position.z <= HIT_Z + hitWindow(type) : diff < hitWindow(type)) && diff < best) { match = t; best = diff; } }
+    if (match) { match.hit = true; if (type === 'stand') standCompleteUntil = performance.now() + 1800; let points = best < PERFECT_WINDOW ? 150 : 100; combo++; score += points + Math.min(combo, 20) * 10; burst(match.mesh.position, styles[type].color); scene.remove(match.mesh); match.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); flash(best < PERFECT_WINDOW ? 'PERFECT +' + points : 'GREAT +' + points); sfx('hit'); } else { flash('TOO EARLY / LATE', false); combo = 0; sfx('miss'); } updateStats();
+}
+let movementTimer;
+function showMovement(type) {
+    const echo = $('movementEcho');
+    echo.textContent = ({ left: '🥊 左拳', right: '🥊 右拳', stand: '✓ 起立动作' })[type];
+    echo.className = 'active ' + type;
+    clearTimeout(movementTimer); movementTimer = setTimeout(() => echo.className = '', 550);
+}
+function updateStats() { $('score').textContent = String(score).padStart(5, '0'); $('combo').textContent = combo + '×'; }
+function setStatus(s, good = false) { $('status').textContent = s; $('dot').classList.toggle('good', good); }
+function clearStage() { for (const t of targets) { scene.remove(t.mesh); t.mesh.traverse(o => { o.geometry?.dispose(); if (o.material) { o.material.map?.dispose(); o.material.dispose(); } }); } targets = []; for (const p of particles) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); } particles = []; }
+let startingGame = false;
+async function beginGame(chosen) {
+    if (startingGame || playing || (cameraPreparing && chosen !== 'camera')) return;
+    startingGame = true; activeSong = selectedSong; $('songSelect').disabled = true; $('cameraStart').disabled = true; $('demoStart').disabled = true; setStatus('正在加载音乐并生成谱面…'); showLoading('正在准备音乐', null, '已缓存的歌曲将直接复用');
+    try { await prepareMusic(); } catch (error) { setStatus('音乐加载失败，请刷新重试'); $('modalNote').textContent = error.message; startingGame = false; showLoading('音乐准备失败', 0, error.message); lockStart(false); return; }
+    startingGame = false; $('loadingPanel').hidden = true;
+    standCompleteUntil = 0; $('standCue').textContent = ''; seatedUpper = null; seatSamples = 0; standAttemptNote = null; standBaseline = null; standFrames = 0; $('postureCue').textContent = chosen === 'camera' ? '请坐稳约一秒 · 校准坐姿中' : '键盘模式 · 空格模拟起立'; clearStage(); mode = chosen; score = 0; combo = 0; misses = 0; beatIndex = 0; nextBeat = 0; startAt = performance.now(); playing = true; lastMovement = { left: 0, right: 0, stand: 0 }; updateStats(); $('time').textContent = DURATION; $('overlay').classList.add('hidden'); setStatus(chosen === 'camera' ? '姿态识别运行中' : '键盘模式 · J / L', true); try { audio ??= new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); startMusic(); } catch { }
+}
+async function enableCamera() {
+    if (cameraPreparing || startingGame || playing) return;
+    cameraPreparing = true; lockStart(true);
+    showLoading('正在打开摄像头', null, '请在浏览器提示中允许摄像头访问');
+    await paintLoading();
+    const btn = $('cameraStart'); btn.disabled = true; btn.textContent = '正在打开摄像头…'; $('modalNote').classList.remove('error');
+    try {
+        if (!navigator.mediaDevices?.getUserMedia) throw Error('浏览器不支持摄像头，或当前页面不是 localhost / HTTPS。');
+        cameraStream?.getTracks().forEach(track => track.stop()); pose?.close();
+        cameraStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' } });
+        const v = $('camera'); v.srcObject = cameraStream; await v.play(); $('cameraTitle').textContent = 'LOADING AI…'; btn.textContent = '正在加载姿态模型…';
+        showLoading('正在准备 AI 识别引擎', null, '首次启动需要加载 WASM 并初始化');
+        await paintLoading();
+        const vision = await FilesetResolver.forVisionTasks(new URL('./public/mediapipe/wasm', import.meta.url).href);
+        const model = await fetchWithProgress(new URL('./public/mediapipe/models/pose_landmarker_lite.task', import.meta.url), '正在下载姿态模型');
+        showLoading('正在初始化 AI 识别', null, '正在加载识别引擎、编译 WASM 并准备 GPU…');
+        await paintLoading();
+        const opts = { baseOptions: { modelAssetBuffer: model, delegate: 'GPU' }, runningMode: 'VIDEO', numPoses: 1, minPoseDetectionConfidence: .55, minTrackingConfidence: .5 };
+        try { pose = await PoseLandmarker.createFromOptions(vision, opts); } catch { showLoading('正在切换 CPU 识别', null, 'GPU 初始化未成功，正在使用兼容模式…'); await paintLoading(); opts.baseOptions.delegate = 'CPU'; pose = await PoseLandmarker.createFromOptions(vision, opts); }
+        $('cameraTitle').textContent = 'AI POSE ACTIVE'; await beginGame('camera');
+    } catch (e) { showLoading('摄像头 / AI 准备失败', 0, e?.message || String(e)); $('modalNote').textContent = '摄像头启动失败：' + (e?.message || e) + '。可使用键盘试玩。'; $('modalNote').classList.add('error'); setStatus('摄像头不可用'); cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    finally { cameraPreparing = false; if (!playing) lockStart(false); btn.textContent = '📷 摄像头开始'; }
+}
+$('cameraStart').onclick = enableCamera;
+$('demoStart').onclick = () => beginGame('keyboard');
+document.addEventListener('keydown', e => { if (playing && ['Space', 'KeyJ', 'KeyL', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (e.repeat) return; if (e.code === 'Space') action('stand'); if (e.code === 'KeyJ' || e.code === 'ArrowLeft') action('left'); if (e.code === 'KeyL' || e.code === 'ArrowRight') action('right'); });
+const mirror = $('bodyMirror'), mirrorContext = mirror.getContext('2d'), mirrorDraw = new DrawingUtils(mirrorContext);
+const canvas = $('skeleton'), cctx = canvas.getContext('2d'), draw = new DrawingUtils(cctx);
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function angle(a, b, c) { const u = [a.x - b.x, a.y - b.y], v = [c.x - b.x, c.y - b.y]; const dot = u[0] * v[0] + u[1] * v[1]; return Math.acos(THREE.MathUtils.clamp(dot / (Math.hypot(...u) * Math.hypot(...v) + 1e-8), -1, 1)) * 180 / Math.PI; }
+let prevWrist = { left: null, right: null }, prevTime = 0;
+function readPose(landmarks, now) {
+    const p = landmarks;
+    if (!p || p.length < 33) return;
+    // Use only visible upper-body landmarks, never inferred offscreen hips.
+    const upperVisible = [11, 12].every(i => (p[i].visibility ?? 0) > .55 && p[i].x >= 0 && p[i].x <= 1 && p[i].y >= 0 && p[i].y <= 1);
+    if (upperVisible) {
+        const headVisible = (p[0].visibility ?? 0) > .55 && p[0].y >= 0 && p[0].y <= 1;
+        const shoulder = (p[11].y + p[12].y) / 2, head = headVisible ? p[0].y : (seatedUpper?.head ?? 0), width = Math.max(dist(p[11], p[12]), .08);
+        if (seatSamples < 12) {
+            seatedUpper ??= { shoulder: 0, head: 0, width: 0 };
+            for (const [key, value] of Object.entries({ shoulder, head, width })) seatedUpper[key] = (seatedUpper[key] * seatSamples + value) / (seatSamples + 1);
+            seatSamples++;
+            $('postureCue').textContent = seatSamples < 12 ? '请坐稳约一秒 · 校准头肩位置' : '✓ 坐姿已校准 · 等待 ↑ 站立音符';
+        } else {
+            // Judge one upward movement only while a pending standing note is approaching.
+            const note = targets.find(t => t.type === 'stand' && !t.hit && !t.passed && t.mesh.position.z >= HIT_Z - SPEED * 2.4 && t.mesh.position.z <= HIT_Z + hitWindow('stand'));
+            if (note !== standAttemptNote) {
+                standAttemptNote = note;
+                standBaseline = note ? { shoulder, head, headVisible, width } : null;
+                standFrames = 0;
+            }
+            if (note && standBaseline) {
+                const rise = (standBaseline.shoulder - shoulder) / standBaseline.width;
+                const headRise = (standBaseline.head - head) / standBaseline.width;
+                const sameDistance = width / standBaseline.width > .8 && width / standBaseline.width < 1.25;
+                standFrames = rise > .4 && (!headVisible || !standBaseline.headVisible || headRise > .3) && sameDistance ? standFrames + 1 : 0;
+                if (standFrames >= 4) action('stand');
+            }
+            $('postureCue').textContent = performance.now() < standCompleteUntil ? '✓ 起立动作完成 · 继续出拳' : '✓ 动作识别中 · 跟随音符';
+        }
+    } else {
+        standFrames = 0; standAttemptNote = null; standBaseline = null;
+        $('postureCue').textContent = '请让双肩保持入镜 · 头部可以出画';
+    }
+    const dt = prevTime ? Math.max((now - prevTime) / 1000, .016) : .05; prevTime = now;
+    const shoulderWidth = dist(p[11], p[12]); const torso = Math.max(shoulderWidth * 1.2, .08);
+    for (const [name, sh, el, wr] of [['left', 11, 13, 15], ['right', 12, 14, 16]]) {
+        const valid = [sh, el, wr].every(i => (p[i].visibility ?? 1) > .45);
+        if (!valid) { armState[name] = false; prevWrist[name] = null; continue; }
+        const wrist = p[wr]; const prev = prevWrist[name]; const v = prev ? dist(wrist, prev) / dt : 0; prevWrist[name] = { x: wrist.x, y: wrist.y };
+        const extension = dist(wrist, p[sh]) / torso; const elbow = angle(p[sh], p[el], wrist);
+        const active = extension > .60 && elbow > 105 && wrist.y < p[sh].y + torso;
+        // Require rising edge with meaningful motion, rather than a static extended arm.
+        if (active && !armState[name] && v > .12) action(name);
+        armState[name] = active;
+    }
+
+}
+function processCamera(now) {
+    if (mode !== 'camera' || !pose || !cameraStream || now - detectClock < 65) return;
+    const v = $('camera'); if (v.readyState < 2 || v.currentTime === lastVideoTime) return;
+    detectClock = now; lastVideoTime = v.currentTime;
+    try {
+        const result = pose.detectForVideo(v, now); cctx.clearRect(0, 0, canvas.width, canvas.height); mirrorContext.clearRect(0, 0, 640, 480); mirror.style.opacity = '0';
+        if (result.landmarks.length) { const points = result.landmarks[0]; mirror.style.opacity = '.7'; mirrorDraw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 5 }); mirrorDraw.drawLandmarks(points, { color: '#ffffff', radius: 4 }); draw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 3 }); draw.drawLandmarks(points, { color: '#f9fbff', radius: 2.3 }); readPose(points, now); setStatus('已检测到人体 · 跟随节拍左右出拳', true); }
+        else { prevTime = 0; standFrames = 0; $('postureCue').textContent = '未检测到身体 · 请回到镜头内'; setStatus('请让头、肩膀和双手回到镜头内'); armState.left = false; armState.right = false; prevWrist.left = null; prevWrist.right = null; }
+    } catch (e) { console.warn('Pose detection error', e); setStatus('姿态识别暂时失败'); }
+}
+function finish() {
+    $('standCue').textContent = '';
+    stopMusic(); $('songSelect').disabled = false; $('cameraStart').disabled = false; $('demoStart').disabled = false;
+    playing = false; $('overlay').classList.remove('hidden'); $('modalTitle').innerHTML = 'WORKOUT <span>DONE!</span>';
+    $('modalText').textContent = `《${activeSong.title}》完成 · 得分 ${score.toLocaleString()} · 漏掉 ${misses} 个目标。再挑战一次，刷新你的纪录！`;
+    $('cameraStart').textContent = '📷 摄像头再来一次'; $('demoStart').textContent = '⌨ 键盘再来一次'; $('modalNote').textContent = '准备好后继续游戏。此版本不会储存摄像头画面。';
+}
+function animate(now) {
+    requestAnimationFrame(animate); const dt = Math.min((now - lastFrame) / 1000, .05); lastFrame = now;
+    portalGroup.children.forEach((p, i) => { p.rotation.z = Math.PI / 2 + Math.sin(now * .0005 + i) * .04; });
+    if (playing) {
+        const elapsed = Math.max(0, audio.currentTime - musicEpoch); const remain = Math.max(0, DURATION - elapsed); $('time').textContent = Math.ceil(remain); $('progress').style.width = (elapsed / DURATION * 100) + '%';
+        processCamera(now);
+        // Spawn early enough for targets to travel from SPAWN_Z to HIT_Z.
+        const travel = (HIT_Z - SPAWN_Z) / SPEED;
+        while (noteIndex < chart.notes.length && chart.notes[noteIndex].time <= elapsed) {
+            const note = chart.notes[noteIndex++]; spawnTarget(note.type); targets[targets.length - 1].hitAt = note.time + travel;
+        }
+        for (const t of targets) {
+            if (t.hit) continue; t.mesh.position.z = HIT_Z + (elapsed - t.hitAt) * SPEED;
+            const gap = Math.abs(t.mesh.position.z - HIT_Z);
+            const tint = t.passed ? 0x526078 : gap < hitWindow(t.type) ? 0x4dff81 : gap < 7 ? 0xffd34d : styles[t.type].color;
+            t.mesh.children[0].material.color.setHex(tint); t.mesh.children[0].material.emissive.setHex(tint);
+            t.mesh.children[0].material.emissiveIntensity = gap < hitWindow(t.type) ? 2.6 : 1.3;
+            t.mesh.children[1].material.color.setHex(tint); t.mesh.rotation.z += dt * .7; t.mesh.children[1].scale.setScalar(1 + Math.sin(now * .009) * .1);
+            if (t.mesh.position.z > HIT_Z + hitWindow(t.type) && !t.passed) { t.passed = true; combo = 0; misses++; updateStats(); flash('MISS', false); }
+        }
+        for (const t of targets.filter(x => x.passed && x.mesh.position.z > 18)) { scene.remove(t.mesh); t.mesh.traverse(o => { o.geometry?.dispose(); if (o.material) { o.material.map?.dispose(); o.material.dispose(); } }); }
+        targets = targets.filter(x => !x.hit && !(x.passed && x.mesh.position.z > 18));
+        updateTiming();
+        if (remain <= 0) finish();
+    }
+    for (const p of particles) { p.life -= dt; p.mesh.position.addScaledVector(p.mesh.userData.velocity, dt); p.mesh.scale.setScalar(Math.max(0, p.life / .45)); }
+    for (const p of particles.filter(x => x.life <= 0)) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
+    particles = particles.filter(x => x.life > 0);
+    renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+addEventListener('beforeunload', () => { cameraStream?.getTracks().forEach(t => t.stop()); pose?.close(); });
+
+    </script>
 </body>
 
 </html>
