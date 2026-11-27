@@ -33,6 +33,9 @@
 
 #loadingPanel{margin:18px 0 0;padding:14px;text-align:left;border:1px solid #426786;border-radius:12px;background:#071326}
 #loadingPanel[hidden]{display:none}#loadingLabel{color:#c5f9f2;font-size:13px}#loadingDetail{font-size:11px;color:#9db4d1;margin-top:7px}#loadingBar{display:block;width:100%;height:12px;margin-top:10px;accent-color:#3cebd5}button:disabled{opacity:.55;cursor:wait}
+#standTestPanel{position:fixed;z-index:9;right:20px;top:90px;width:min(380px,calc(100vw - 40px));padding:20px;background:#09172ff2;border:1px solid #43e6cf;border-radius:16px}#standTestPanel[hidden]{display:none}#standTestPanel h2{margin:0 0 10px;font-size:22px}#standTestPanel p{line-height:1.6;font-size:14px}#standTestPanel progress{width:100%;accent-color:#43e6cf}#testResult{font-weight:700;color:#61f5d2}#testMetrics{font-variant-numeric:tabular-nums}.stand-testing .cameraBox,.stand-testing .leftpanel{width:min(430px,85vw)}.stand-testing .cameraBox{height:min(290px,40vh)}.stand-testing #bodyMirror,.stand-testing #timingCue,.stand-testing #postureCue,.stand-testing .gamehint,.stand-testing .hitline{display:none}
+#standTestStart[hidden]{display:none}#standTestStart{display:block;width:100%;margin-top:10px;text-align:center}
+#pauseButton{position:fixed;right:24px;top:88px;z-index:10}#pauseButton[hidden],#pauseOverlay[hidden]{display:none}#pauseOverlay{position:fixed;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;background:#030714bf;backdrop-filter:blur(6px)}#pauseOverlay h2{font-size:32px;margin-top:0}#pauseOverlay p{color:#b9cde3}
     </style>
 </head>
 
@@ -101,9 +104,13 @@ app.innerHTML = `
 <canvas id="bodyMirror" width="640" height="480"></canvas><div id="movementEcho"></div><div class="gamehint">跟随光球节奏 · 左右出拳 · ↑ 跟随提示完成起立</div>
 <div class="feedback" id="feedback">PERFECT!</div><div class="hitline">球进入圆圈时出拳 · 黄色准备 / 绿色出拳</div><div id="standCue" role="status" aria-live="polite"></div><div id="postureCue">坐稳后开始 · 站立识别待校准</div><div id="timingCue">等待光球</div>
 <div class="bottom"><div class="leftpanel"><div class="cameraBox"><video id="camera" autoplay muted playsinline></video><canvas id="skeleton" width="430" height="290"></canvas><span class="cameraTitle" id="cameraTitle">CAMERA OFF</span></div><div class="status"><span class="dot" id="dot"></span><span id="status">等待开始</span></div></div><div class="instructions">左拳 <span class="key">J</span>　右拳 <span class="key">L</span><br>↑ 站立 <span class="key">SPACE</span><br><span id="lastAction">准备就绪</span></div></div>
-<div class="overlay" id="overlay"><div class="modal"><div class="eyebrow">YOUR BODY IS THE CONTROLLER</div><h1 id="modalTitle">MOVE. PUNCH.<br><span>LEVEL UP.</span></h1><p id="modalText">开启摄像头，用真实身体动作击中光球。坐着跟随音乐出拳；看到 ↑ 音符时完成起立动作，选择歌曲，开始完整音乐训练。</p><div class="features"><span>🥊 左 / 右挥拳</span><span>🪑 坐姿游玩</span><span>⚡ 连击加分</span><span id="songBadge">🎵 选择训练歌曲</span></div><div class="song-picker"><label for="songSelect">选择歌曲 / 关卡</label><select id="songSelect"></select><p id="songInfo"></p></div><div class="actions"><button class="primary" id="cameraStart">📷 摄像头开始</button><button class="secondary" id="demoStart">⌨ 键盘试玩</button></div><div id="loadingPanel" hidden aria-live="polite"><div id="loadingLabel"></div><progress id="loadingBar" max="100" aria-label="当前步骤加载进度"></progress><div id="loadingDetail"></div></div><p class="smallprint" id="modalNote">建议 Chrome / Edge 桌面浏览器，开始时请坐稳一秒校准，让头、肩膀和双手入镜。起立通过头肩一起上移判断，请保持摄像头固定，起立后双肩仍需入镜，头部可以出画。视频只在本机处理，不上传服务器。</p></div></div>`;
+<div class="overlay" id="overlay"><div class="modal"><div class="eyebrow">YOUR BODY IS THE CONTROLLER</div><h1 id="modalTitle">MOVE. PUNCH.<br><span>LEVEL UP.</span></h1><p id="modalText">开启摄像头，用真实身体动作击中光球。坐着跟随音乐出拳；看到 ↑ 音符时完成起立动作，选择歌曲，开始完整音乐训练。</p><div class="features"><span>🥊 左 / 右挥拳</span><span>🪑 坐姿游玩</span><span>⚡ 连击加分</span><span id="songBadge">🎵 选择训练歌曲</span></div><div class="song-picker"><label for="songSelect">选择歌曲 / 关卡</label><select id="songSelect"></select><button class="secondary" id="standTestStart" hidden>↑ 站立检测测试</button><p id="songInfo"></p></div><div class="actions"><button class="primary" id="cameraStart">📷 摄像头开始</button><button class="secondary" id="demoStart">⌨ 键盘试玩</button></div><div id="loadingPanel" hidden aria-live="polite"><div id="loadingLabel"></div><progress id="loadingBar" max="100" aria-label="当前步骤加载进度"></progress><div id="loadingDetail"></div></div><p class="smallprint" id="modalNote">建议 Chrome / Edge 桌面浏览器，开始时请坐稳一秒校准，让头、肩膀和双手入镜。起立通过头肩一起上移判断，请保持摄像头固定，起立后双肩仍需入镜，头部可以出画。视频只在本机处理，不上传服务器。</p></div></div>`;
 
+app.insertAdjacentHTML('beforeend', `<button id="pauseButton" class="secondary" hidden>Ⅱ 暂停 · P</button><div id="pauseOverlay" hidden><div class="modal"><h2>已暂停</h2><p id="pauseMessage" role="status">音乐与动作计分已暂停</p><button id="resumeButton" class="primary">▶ 继续游戏 · P</button></div></div>`);
+app.insertAdjacentHTML('beforeend', `<section id="standTestPanel" hidden><h2>站立检测测试</h2><p>坐稳后点击校准，再站起来。无需音乐或音符；每次测试只计一次。</p><p id="testResult" role="status" aria-live="polite">请先校准坐姿</p><progress id="testRise" max="100" value="0" aria-label="起立幅度"></progress><p id="testMetrics">等待摄像头数据</p><p>已完成：<strong id="testCount">0</strong> 次</p><button id="testCalibrate" class="primary">校准 / 下一次测试</button> <button id="testExit" class="secondary">退出测试</button></section>`);
 const $ = id => document.getElementById(id);
+const localDebug = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+$('standTestStart').hidden = !localDebug;
 function showLoading(label, percent = null, detail = '') {
     $('loadingPanel').hidden = false;
     $('loadingLabel').textContent = label;
@@ -112,9 +119,12 @@ function showLoading(label, percent = null, detail = '') {
     else $('loadingBar').value = percent;
 }
 function lockStart(locked) {
-    for (const id of ['songSelect', 'cameraStart', 'demoStart']) $(id).disabled = locked;
+    for (const id of ['songSelect', 'cameraStart', 'demoStart', 'standTestStart']) $(id).disabled = locked;
 }
 const paintLoading = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+// Vite serves public/ at its base URL; Python serves the directory itself.
+const resourceBase = new URL(import.meta.env?.BASE_URL ?? './public/', document.baseURI);
+const resourceURL = path => new URL(path, resourceBase).href;
 async function fetchWithProgress(url, label) {
     showLoading(label, null, '正在连接…');
     const response = await fetch(url);
@@ -137,6 +147,47 @@ async function fetchWithProgress(url, label) {
     return bytes;
 }
 let cameraPreparing = false;
+let standTesting = false, testCalibrating = false, testDone = false, testCount = 0;
+const STAND_RULE = { shoulder: .22, head: .15, frames: 3 };
+function evaluateStand(base, current, frames) {
+    const rise = (base.shoulder - current.shoulder) / base.width;
+    const headRise = (base.head - current.head) / base.width;
+    const sameDistance = current.width / base.width > .8 && current.width / base.width < 1.25;
+    const headOK = !current.headVisible || base.headVisible === false || headRise > STAND_RULE.head;
+    const nextFrames = rise > STAND_RULE.shoulder && headOK && sameDistance ? frames + 1 : 0;
+    return {rise, headRise, sameDistance, headOK, frames: nextFrames, complete: nextFrames >= STAND_RULE.frames};
+}
+function startStandTest() {
+    standTesting = true; testCalibrating = false; testDone = false; testCount = 0;
+    mode = 'camera'; detectClock = 0; lastVideoTime = -1; standFrames = 0; standBaseline = null;
+    $('testCount').textContent = '0'; $('testRise').value = 0;
+    $('testResult').textContent = '请坐稳，然后点击校准'; $('testMetrics').textContent = '肩部上移门槛：肩宽的 22%';
+    $('loadingPanel').hidden = true; $('overlay').classList.add('hidden'); $('standTestPanel').hidden = false;
+    document.body.classList.add('stand-testing');
+}
+function readStandTest(p) {
+    const visible = [11, 12].every(i => p[i].visibility > .55 && p[i].x >= 0 && p[i].x <= 1 && p[i].y >= 0 && p[i].y <= 1);
+    if (!visible) { standFrames = 0; if (testCalibrating) { seatSamples = 0; seatedUpper = null; } $('testResult').textContent = '请让双肩保持入镜'; return; }
+    const headVisible = p[0].visibility > .55 && p[0].y >= 0 && p[0].y <= 1;
+    const current = { shoulder: (p[11].y + p[12].y) / 2, head: p[0].y, headVisible, width: Math.max(dist(p[11], p[12]), .08) };
+    if (testCalibrating) {
+        seatedUpper ??= {shoulder: 0, head: 0, width: 0, headVisible: true};
+        for (const key of ['shoulder', 'head', 'width']) seatedUpper[key] = (seatedUpper[key] * seatSamples + current[key]) / (seatSamples + 1);
+        seatedUpper.headVisible &&= headVisible;
+        seatSamples++;
+        $('testResult').textContent = `保持坐稳 · 校准 ${seatSamples}/15`;
+        if (seatSamples >= 15) { testCalibrating = false; standBaseline = {...seatedUpper}; $('testResult').textContent = '✓ 校准完成，现在站起来'; }
+        return;
+    }
+    if (!standBaseline) return;
+    const result = evaluateStand(standBaseline, current, standFrames);
+    standFrames = result.frames;
+    $('testRise').value = Math.max(0, Math.min(100, result.rise / STAND_RULE.shoulder * 100));
+    $('testMetrics').textContent = `肩部上移 ${(result.rise * 100).toFixed(1)}% / 22% · 头部 ${headVisible ? (result.headRise * 100).toFixed(1) + '% / 15%' : '出画，跳过'} · 连续 ${Math.min(standFrames, 3)}/3 次`;
+    if (testDone) { $('testResult').textContent = '✓ 动作完成！坐稳后点击“下一次测试”'; return; }
+    if (result.complete) { testDone = true; $('testCount').textContent = ++testCount; $('testResult').textContent = '✓ 动作完成！坐稳后点击“下一次测试”'; }
+    else $('testResult').textContent = !result.sameDistance ? '距离变化过大，请避免前倾' : result.rise <= STAND_RULE.shoulder ? '等待向上动作 · 幅度尚未达到门槛' : !result.headOK ? '肩部已达标，等待头部一起上移' : '幅度达标，正在确认动作…';
+}
 let selectedSong = songs[0], activeSong = selectedSong, chart = null, noteIndex = 0, musicEpoch = 0;
 let DURATION = 120;
 $('songSelect').innerHTML = songs.map(song => `<option value="${song.id}">${song.title} — ${song.artist}</option>`).join('');
@@ -163,7 +214,7 @@ function spawnTarget(type) {
     const labelCanvas = document.createElement('canvas'); labelCanvas.width = 128; labelCanvas.height = 128; const ctx = labelCanvas.getContext('2d'); ctx.fillStyle = '#091024'; ctx.beginPath(); ctx.arc(64, 64, 37, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.font = 'bold 63px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(style.label, 64, 65); const tex = new THREE.CanvasTexture(labelCanvas); const icon = new THREE.Mesh(new THREE.PlaneGeometry(.93, .93), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })); icon.position.z = .85; mesh.add(icon);
     mesh.position.set(laneXs[type], 2.7, -38); scene.add(mesh); targets.push({ type, mesh, hit: false, passed: false });
 }
-const HIT_Z = 5, SPAWN_Z = -38, SPEED = 14.5, HIT_WINDOW = 3.6, PERFECT_WINDOW = 1.6;
+const HIT_Z = 5, SPAWN_Z = -38, SPEED = 14.5, HIT_WINDOW = 5.8, PERFECT_WINDOW = 1.6;
 const hitRings = {};
 for (const side of ['left', 'right', 'stand']) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.85, .14, 12, 64), new THREE.MeshBasicMaterial({ color: 0x7398bb, transparent: true, opacity: .8, depthTest: false }));
@@ -200,6 +251,7 @@ function updateTiming() {
     cue.dataset.state = gap < window ? 'hit' : gap < 7 ? 'ready' : 'wait';
     cue.textContent = gap < PERFECT_WINDOW ? `现在！${side} · PERFECT` : gap < window ? `现在：${side}！` : gap < (nearest.type === 'stand' ? 30 : 7) ? `准备${side}…` : '等球进入击球圈';
 }
+let paused = false, pauseBusy = false;
 let playing = false, score = 0, combo = 0, misses = 0, startAt = 0, lastFrame = performance.now(), nextBeat = 0, beatIndex = 0, mode = 'keyboard', cameraStream = null, pose = null, detectClock = 0, lastVideoTime = -1, rafId = null, lastMovement = { left: 0, right: 0, stand: 0 }, armState = { left: false, right: false }, feedbackTimer = null, audio = null;
 const hitWindow = type => type === 'stand' ? 22 : HIT_WINDOW;
 let standCompleteUntil = 0;
@@ -212,7 +264,7 @@ async function prepareMusic() {
     audio ??= new (window.AudioContext || window.webkitAudioContext)();
     await audio.resume();
     if (!musicCache.has(activeSong.id)) {
-        const bytes = await fetchWithProgress(new URL(`./public/audio/${activeSong.file}`, import.meta.url), '正在下载音乐');
+        const bytes = await fetchWithProgress(resourceURL(`audio/${activeSong.file}`), '正在下载音乐');
         showLoading('正在解码音乐', null, '首次加载完整歌曲可能需要几秒');
         await paintLoading();
         musicCache.set(activeSong.id, await audio.decodeAudioData(bytes.buffer));
@@ -265,7 +317,7 @@ function sfx(type) {
 function flash(label, good = true) { $('feedback').textContent = label; $('feedback').style.color = good ? '#ffffff' : '#ff839b'; $('feedback').classList.add('show'); clearTimeout(feedbackTimer); feedbackTimer = setTimeout(() => $('feedback').classList.remove('show'), 300); }
 function burst(position, color) { for (let i = 0; i < 12; i++) { const m = new THREE.Mesh(new THREE.BoxGeometry(.13, .13, .13), new THREE.MeshBasicMaterial({ color })); m.position.copy(position); m.userData.velocity = new THREE.Vector3((Math.random() - .5) * 9, (Math.random() - .1) * 6, (Math.random() - .5) * 6); scene.add(m); particles.push({ mesh: m, life: .45 }); } }
 function action(type) {
-    if (!playing) return; const now = performance.now(); if (now - lastMovement[type] < 200) return; lastMovement[type] = now; showMovement(type); $('lastAction').textContent = ({ left: '🥊 左拳', right: '🥊 右拳', stand: '✓ 起立动作' })[type]; let match = null, best = 1e10; for (const t of targets) { if (t.hit || t.type !== type) continue; const diff = Math.abs(t.mesh.position.z - HIT_Z); if (!t.passed && (type === 'stand' ? t.mesh.position.z >= HIT_Z - SPEED * 2.4 && t.mesh.position.z <= HIT_Z + hitWindow(type) : diff < hitWindow(type)) && diff < best) { match = t; best = diff; } }
+    if (!playing || paused) return; const now = performance.now(); if (now - lastMovement[type] < 200) return; lastMovement[type] = now; showMovement(type); $('lastAction').textContent = ({ left: '🥊 左拳', right: '🥊 右拳', stand: '✓ 起立动作' })[type]; let match = null, best = 1e10; for (const t of targets) { if (t.hit || t.type !== type) continue; const diff = Math.abs(t.mesh.position.z - HIT_Z); if (!t.passed && (type === 'stand' ? t.mesh.position.z >= HIT_Z - SPEED * 2.4 && t.mesh.position.z <= HIT_Z + hitWindow(type) : diff < hitWindow(type)) && diff < best) { match = t; best = diff; } }
     if (match) { match.hit = true; if (type === 'stand') standCompleteUntil = performance.now() + 1800; let points = best < PERFECT_WINDOW ? 150 : 100; combo++; score += points + Math.min(combo, 20) * 10; burst(match.mesh.position, styles[type].color); scene.remove(match.mesh); match.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); flash(best < PERFECT_WINDOW ? 'PERFECT +' + points : 'GREAT +' + points); sfx('hit'); } else { flash('TOO EARLY / LATE', false); combo = 0; sfx('miss'); } updateStats();
 }
 let movementTimer;
@@ -278,15 +330,45 @@ function showMovement(type) {
 function updateStats() { $('score').textContent = String(score).padStart(5, '0'); $('combo').textContent = combo + '×'; }
 function setStatus(s, good = false) { $('status').textContent = s; $('dot').classList.toggle('good', good); }
 function clearStage() { for (const t of targets) { scene.remove(t.mesh); t.mesh.traverse(o => { o.geometry?.dispose(); if (o.material) { o.material.map?.dispose(); o.material.dispose(); } }); } targets = []; for (const p of particles) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); } particles = []; }
+async function togglePause() {
+    if (!playing || pauseBusy) return;
+    pauseBusy = true;
+    $('resumeButton').disabled = true;
+    try {
+        if (!paused) {
+            paused = true;
+            $('pauseOverlay').hidden = false;
+            $('pauseMessage').textContent = '音乐与动作计分已暂停';
+            $('standCue').textContent = '';
+            await audio.suspend();
+        } else {
+            await audio.resume();
+            prevTime = 0; prevWrist = {left: null, right: null};
+            armState = {left: false, right: false}; standFrames = 0;
+            lastVideoTime = -1; detectClock = 0; lastFrame = performance.now();
+            paused = false;
+            $('pauseOverlay').hidden = true;
+        }
+    } catch (error) {
+        paused = true;
+        $('pauseOverlay').hidden = false;
+        $('pauseMessage').textContent = '音频状态切换失败，请点击继续重试';
+        console.warn('Pause audio error', error);
+    } finally { pauseBusy = false; $('resumeButton').disabled = false; }
+}
+$('pauseButton').onclick = togglePause;
+$('resumeButton').onclick = togglePause;
 let startingGame = false;
 async function beginGame(chosen) {
     if (startingGame || playing || (cameraPreparing && chosen !== 'camera')) return;
-    startingGame = true; activeSong = selectedSong; $('songSelect').disabled = true; $('cameraStart').disabled = true; $('demoStart').disabled = true; setStatus('正在加载音乐并生成谱面…'); showLoading('正在准备音乐', null, '已缓存的歌曲将直接复用');
+    startingGame = true; activeSong = selectedSong; lockStart(true); setStatus('正在加载音乐并生成谱面…'); showLoading('正在准备音乐', null, '已缓存的歌曲将直接复用');
     try { await prepareMusic(); } catch (error) { setStatus('音乐加载失败，请刷新重试'); $('modalNote').textContent = error.message; startingGame = false; showLoading('音乐准备失败', 0, error.message); lockStart(false); return; }
     startingGame = false; $('loadingPanel').hidden = true;
+    paused = false; $('pauseOverlay').hidden = true; $('pauseButton').hidden = false;
     standCompleteUntil = 0; $('standCue').textContent = ''; seatedUpper = null; seatSamples = 0; standAttemptNote = null; standBaseline = null; standFrames = 0; $('postureCue').textContent = chosen === 'camera' ? '请坐稳约一秒 · 校准坐姿中' : '键盘模式 · 空格模拟起立'; clearStage(); mode = chosen; score = 0; combo = 0; misses = 0; beatIndex = 0; nextBeat = 0; startAt = performance.now(); playing = true; lastMovement = { left: 0, right: 0, stand: 0 }; updateStats(); $('time').textContent = DURATION; $('overlay').classList.add('hidden'); setStatus(chosen === 'camera' ? '姿态识别运行中' : '键盘模式 · J / L', true); try { audio ??= new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); startMusic(); } catch { }
 }
-async function enableCamera() {
+async function enableCamera(testOnly = false) {
+    if (testOnly && !localDebug) return;
     if (cameraPreparing || startingGame || playing) return;
     cameraPreparing = true; lockStart(true);
     showLoading('正在打开摄像头', null, '请在浏览器提示中允许摄像头访问');
@@ -299,19 +381,22 @@ async function enableCamera() {
         const v = $('camera'); v.srcObject = cameraStream; await v.play(); $('cameraTitle').textContent = 'LOADING AI…'; btn.textContent = '正在加载姿态模型…';
         showLoading('正在准备 AI 识别引擎', null, '首次启动需要加载 WASM 并初始化');
         await paintLoading();
-        const vision = await FilesetResolver.forVisionTasks(new URL('./public/mediapipe/wasm', import.meta.url).href);
-        const model = await fetchWithProgress(new URL('./public/mediapipe/models/pose_landmarker_lite.task', import.meta.url), '正在下载姿态模型');
+        const vision = await FilesetResolver.forVisionTasks(resourceURL('mediapipe/wasm'));
+        const model = await fetchWithProgress(resourceURL('mediapipe/models/pose_landmarker_lite.task'), '正在下载姿态模型');
         showLoading('正在初始化 AI 识别', null, '正在加载识别引擎、编译 WASM 并准备 GPU…');
         await paintLoading();
         const opts = { baseOptions: { modelAssetBuffer: model, delegate: 'GPU' }, runningMode: 'VIDEO', numPoses: 1, minPoseDetectionConfidence: .55, minTrackingConfidence: .5 };
         try { pose = await PoseLandmarker.createFromOptions(vision, opts); } catch { showLoading('正在切换 CPU 识别', null, 'GPU 初始化未成功，正在使用兼容模式…'); await paintLoading(); opts.baseOptions.delegate = 'CPU'; pose = await PoseLandmarker.createFromOptions(vision, opts); }
-        $('cameraTitle').textContent = 'AI POSE ACTIVE'; await beginGame('camera');
+        $('cameraTitle').textContent = 'AI POSE ACTIVE'; if (testOnly) startStandTest(); else await beginGame('camera');
     } catch (e) { showLoading('摄像头 / AI 准备失败', 0, e?.message || String(e)); $('modalNote').textContent = '摄像头启动失败：' + (e?.message || e) + '。可使用键盘试玩。'; $('modalNote').classList.add('error'); setStatus('摄像头不可用'); cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null; }
     finally { cameraPreparing = false; if (!playing) lockStart(false); btn.textContent = '📷 摄像头开始'; }
 }
-$('cameraStart').onclick = enableCamera;
+$('cameraStart').onclick = () => enableCamera(false);
+$('standTestStart').onclick = () => enableCamera(true);
+$('testCalibrate').onclick = () => { testCalibrating = true; testDone = false; seatedUpper = null; seatSamples = 0; standBaseline = null; standFrames = 0; $('testRise').value = 0; $('testResult').textContent = '请保持坐稳，正在校准…'; };
+$('testExit').onclick = () => { standTesting = false; testCalibrating = false; mode = 'keyboard'; cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null; pose?.close(); pose = null; $('camera').srcObject = null; mirror.style.opacity = '0'; $('standTestPanel').hidden = true; document.body.classList.remove('stand-testing'); $('overlay').classList.remove('hidden'); lockStart(false); setStatus('测试已结束'); };
 $('demoStart').onclick = () => beginGame('keyboard');
-document.addEventListener('keydown', e => { if (playing && ['Space', 'KeyJ', 'KeyL', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (e.repeat) return; if (e.code === 'Space') action('stand'); if (e.code === 'KeyJ' || e.code === 'ArrowLeft') action('left'); if (e.code === 'KeyL' || e.code === 'ArrowRight') action('right'); });
+document.addEventListener('keydown', e => { if (playing && ['KeyP', 'Escape'].includes(e.code)) { e.preventDefault(); if (!e.repeat) togglePause(); return; } if (playing && ['Space', 'KeyJ', 'KeyL', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (e.repeat) return; if (e.code === 'Space') action('stand'); if (e.code === 'KeyJ' || e.code === 'ArrowLeft') action('left'); if (e.code === 'KeyL' || e.code === 'ArrowRight') action('right'); });
 const mirror = $('bodyMirror'), mirrorContext = mirror.getContext('2d'), mirrorDraw = new DrawingUtils(mirrorContext);
 const canvas = $('skeleton'), cctx = canvas.getContext('2d'), draw = new DrawingUtils(cctx);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -320,6 +405,7 @@ let prevWrist = { left: null, right: null }, prevTime = 0;
 function readPose(landmarks, now) {
     const p = landmarks;
     if (!p || p.length < 33) return;
+    if (standTesting) { readStandTest(p); return; }
     // Use only visible upper-body landmarks, never inferred offscreen hips.
     const upperVisible = [11, 12].every(i => (p[i].visibility ?? 0) > .55 && p[i].x >= 0 && p[i].x <= 1 && p[i].y >= 0 && p[i].y <= 1);
     if (upperVisible) {
@@ -328,6 +414,7 @@ function readPose(landmarks, now) {
         if (seatSamples < 12) {
             seatedUpper ??= { shoulder: 0, head: 0, width: 0 };
             for (const [key, value] of Object.entries({ shoulder, head, width })) seatedUpper[key] = (seatedUpper[key] * seatSamples + value) / (seatSamples + 1);
+            seatedUpper.headVisible = headVisible;
             seatSamples++;
             $('postureCue').textContent = seatSamples < 12 ? '请坐稳约一秒 · 校准头肩位置' : '✓ 坐姿已校准 · 等待 ↑ 站立音符';
         } else {
@@ -335,15 +422,13 @@ function readPose(landmarks, now) {
             const note = targets.find(t => t.type === 'stand' && !t.hit && !t.passed && t.mesh.position.z >= HIT_Z - SPEED * 2.4 && t.mesh.position.z <= HIT_Z + hitWindow('stand'));
             if (note !== standAttemptNote) {
                 standAttemptNote = note;
-                standBaseline = note ? { shoulder, head, headVisible, width } : null;
+                standBaseline = note ? { ...seatedUpper } : null;
                 standFrames = 0;
             }
             if (note && standBaseline) {
-                const rise = (standBaseline.shoulder - shoulder) / standBaseline.width;
-                const headRise = (standBaseline.head - head) / standBaseline.width;
-                const sameDistance = width / standBaseline.width > .8 && width / standBaseline.width < 1.25;
-                standFrames = rise > .4 && (!headVisible || !standBaseline.headVisible || headRise > .3) && sameDistance ? standFrames + 1 : 0;
-                if (standFrames >= 4) action('stand');
+                const result = evaluateStand(standBaseline, {shoulder, head, headVisible, width}, standFrames);
+                standFrames = result.frames;
+                if (result.complete) action('stand');
             }
             $('postureCue').textContent = performance.now() < standCompleteUntil ? '✓ 起立动作完成 · 继续出拳' : '✓ 动作识别中 · 跟随音符';
         }
@@ -372,12 +457,13 @@ function processCamera(now) {
     try {
         const result = pose.detectForVideo(v, now); cctx.clearRect(0, 0, canvas.width, canvas.height); mirrorContext.clearRect(0, 0, 640, 480); mirror.style.opacity = '0';
         if (result.landmarks.length) { const points = result.landmarks[0]; mirror.style.opacity = '.7'; mirrorDraw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 5 }); mirrorDraw.drawLandmarks(points, { color: '#ffffff', radius: 4 }); draw.drawConnectors(points, PoseLandmarker.POSE_CONNECTIONS, { color: '#28f4df', lineWidth: 3 }); draw.drawLandmarks(points, { color: '#f9fbff', radius: 2.3 }); readPose(points, now); setStatus('已检测到人体 · 跟随节拍左右出拳', true); }
-        else { prevTime = 0; standFrames = 0; $('postureCue').textContent = '未检测到身体 · 请回到镜头内'; setStatus('请让头、肩膀和双手回到镜头内'); armState.left = false; armState.right = false; prevWrist.left = null; prevWrist.right = null; }
+        else { if (standTesting) { if (testCalibrating) { seatSamples = 0; seatedUpper = null; } $('testResult').textContent = '未检测到身体，请回到镜头内'; } prevTime = 0; standFrames = 0; $('postureCue').textContent = '未检测到身体 · 请回到镜头内'; setStatus('请让头、肩膀和双手回到镜头内'); armState.left = false; armState.right = false; prevWrist.left = null; prevWrist.right = null; }
     } catch (e) { console.warn('Pose detection error', e); setStatus('姿态识别暂时失败'); }
 }
 function finish() {
+    paused = false; $('pauseButton').hidden = true; $('pauseOverlay').hidden = true;
     $('standCue').textContent = '';
-    stopMusic(); $('songSelect').disabled = false; $('cameraStart').disabled = false; $('demoStart').disabled = false;
+    stopMusic(); lockStart(false);
     playing = false; $('overlay').classList.remove('hidden'); $('modalTitle').innerHTML = 'WORKOUT <span>DONE!</span>';
     $('modalText').textContent = `《${activeSong.title}》完成 · 得分 ${score.toLocaleString()} · 漏掉 ${misses} 个目标。再挑战一次，刷新你的纪录！`;
     $('cameraStart').textContent = '📷 摄像头再来一次'; $('demoStart').textContent = '⌨ 键盘再来一次'; $('modalNote').textContent = '准备好后继续游戏。此版本不会储存摄像头画面。';
@@ -385,7 +471,8 @@ function finish() {
 function animate(now) {
     requestAnimationFrame(animate); const dt = Math.min((now - lastFrame) / 1000, .05); lastFrame = now;
     portalGroup.children.forEach((p, i) => { p.rotation.z = Math.PI / 2 + Math.sin(now * .0005 + i) * .04; });
-    if (playing) {
+    if (standTesting) processCamera(now);
+    if (playing && !paused) {
         const elapsed = Math.max(0, audio.currentTime - musicEpoch); const remain = Math.max(0, DURATION - elapsed); $('time').textContent = Math.ceil(remain); $('progress').style.width = (elapsed / DURATION * 100) + '%';
         processCamera(now);
         // Spawn early enough for targets to travel from SPAWN_Z to HIT_Z.
@@ -407,7 +494,7 @@ function animate(now) {
         updateTiming();
         if (remain <= 0) finish();
     }
-    for (const p of particles) { p.life -= dt; p.mesh.position.addScaledVector(p.mesh.userData.velocity, dt); p.mesh.scale.setScalar(Math.max(0, p.life / .45)); }
+    for (const p of particles) { if (paused) continue; p.life -= dt; p.mesh.position.addScaledVector(p.mesh.userData.velocity, dt); p.mesh.scale.setScalar(Math.max(0, p.life / .45)); }
     for (const p of particles.filter(x => x.life <= 0)) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
     particles = particles.filter(x => x.life > 0);
     renderer.render(scene, camera);
