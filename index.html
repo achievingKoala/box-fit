@@ -158,6 +158,9 @@ async function fetchWithProgress(url, label) {
     showLoading(label, null, '正在连接…');
     const response = await fetch(url);
     if (!response.ok) throw Error(`${label}失败（HTTP ${response.status}）`);
+    if ((response.headers.get('content-type') ?? '').includes('text/html')) {
+        throw Error(`资源文件缺失：${new URL(url, document.baseURI).pathname}（服务器返回了网页，请检查部署文件）`);
+    }
     const total = Number(response.headers.get('content-length'));
     const reader = response.body?.getReader();
     if (!reader) return new Uint8Array(await response.arrayBuffer());
@@ -296,7 +299,10 @@ async function prepareMusic() {
         const bytes = await fetchWithProgress(resourceURL(`audio/${activeSong.file}`), '正在下载音乐');
         showLoading('正在解码音乐', null, '首次加载完整歌曲可能需要几秒');
         await paintLoading();
-        musicCache.set(activeSong.id, await audio.decodeAudioData(bytes.buffer));
+        const signature = new TextDecoder().decode(bytes.subarray(0, 256)).trimStart().toLowerCase();
+        if (signature.startsWith('<!doctype html') || signature.startsWith('<html')) throw Error(`音乐文件未部署：${activeSong.file}`);
+        try { musicCache.set(activeSong.id, await audio.decodeAudioData(bytes.buffer)); }
+        catch { throw Error(`音乐解码失败：${activeSong.file}，请检查音频完整性与浏览器格式支持`); }
     }
     musicBuffer = musicCache.get(activeSong.id);
     showLoading('正在生成节奏谱面', null, '正在分析歌曲节拍…');
@@ -359,18 +365,36 @@ function showMovement(type) {
 function updateStats() { $('score').textContent = String(score).padStart(5, '0'); $('combo').textContent = combo + '×'; }
 function setStatus(s, good = false) { $('status').textContent = s; $('dot').classList.toggle('good', good); }
 function clearStage() { for (const t of targets) { scene.remove(t.mesh); t.mesh.traverse(o => { o.geometry?.dispose(); if (o.material) { o.material.map?.dispose(); o.material.dispose(); } }); } targets = []; for (const p of particles) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); } particles = []; }
+function stopCamera() {
+    cameraStream?.getTracks().forEach(track => track.stop()); cameraStream = null;
+    $('camera').srcObject = null; $('cameraTitle').textContent = 'CAMERA OFF';
+    const preview = $('skeleton'); preview.getContext('2d').clearRect(0, 0, preview.width, preview.height);
+    $('bodyMirror').style.opacity = '0';
+}
+async function openCamera() {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {width: {ideal: 640}, height: {ideal: 480}, facingMode: 'user'}});
+    if (document.hidden) { stream.getTracks().forEach(track => track.stop()); throw Error('请回到页面后再开启摄像头'); }
+    cameraStream = stream;
+    try {
+        const video = $('camera'); video.srcObject = stream; await video.play();
+        if (document.hidden || cameraStream !== stream) throw Error('摄像头开启已取消，请重试');
+        $('skeleton').width = video.videoWidth; $('skeleton').height = video.videoHeight;
+        $('cameraTitle').textContent = 'AI POSE ACTIVE'; lastVideoTime = -1;
+    } catch (error) { stopCamera(); throw error; }
+}
 async function togglePause() {
     if (!playing || pauseBusy) return;
     pauseBusy = true;
     $('resumeButton').disabled = true;
     try {
         if (!paused) {
-            paused = true;
+            paused = true; stopCamera();
             $('pauseOverlay').hidden = false;
             $('pauseMessage').textContent = '音乐与动作计分已暂停';
             $('standCue').textContent = '';
             await audio.suspend();
         } else {
+            if (mode === 'camera') { $('pauseMessage').textContent = '正在重新开启摄像头…'; await openCamera(); }
             await audio.resume();
             prevTime = 0; prevWrist = {left: null, right: null};
             armState = {left: false, right: false}; standFrames = 0;
@@ -379,9 +403,9 @@ async function togglePause() {
             $('pauseOverlay').hidden = true;
         }
     } catch (error) {
-        paused = true;
+        stopCamera(); paused = true;
         $('pauseOverlay').hidden = false;
-        $('pauseMessage').textContent = '音频状态切换失败，请点击继续重试';
+        $('pauseMessage').textContent = '恢复失败，请确认摄像头权限后点击继续重试';
         console.warn('Pause audio error', error);
     } finally { pauseBusy = false; $('resumeButton').disabled = false; }
 }
@@ -390,8 +414,9 @@ $('resumeButton').onclick = togglePause;
 let startingGame = false;
 async function beginGame(chosen) {
     if (startingGame || playing || (cameraPreparing && chosen !== 'camera')) return;
+    if (chosen === 'keyboard') stopCamera();
     startingGame = true; activeSong = selectedSong; lockStart(true); setStatus('正在加载音乐并生成谱面…'); showLoading('正在准备音乐', null, '已缓存的歌曲将直接复用');
-    try { await prepareMusic(); } catch (error) { setStatus('音乐加载失败，请刷新重试'); $('modalNote').textContent = error.message; startingGame = false; showLoading('音乐准备失败', 0, error.message); lockStart(false); return; }
+    try { await prepareMusic(); } catch (error) { setStatus('音乐加载失败，请刷新重试'); $('modalNote').textContent = error.message; startingGame = false; showLoading('音乐准备失败', 0, error.message); stopCamera(); lockStart(false); return; }
     startingGame = false; $('loadingPanel').hidden = true;
     paused = false; $('pauseOverlay').hidden = true; $('pauseButton').hidden = false;
     standCompleteUntil = 0; $('standCue').textContent = ''; seatedUpper = null; seatSamples = 0; standAttemptNote = null; standBaseline = null; standFrames = 0; $('postureCue').textContent = chosen === 'camera' ? '请坐稳约一秒 · 校准坐姿中' : '键盘模式 · 空格模拟起立'; clearStage(); mode = chosen; score = 0; combo = 0; misses = 0; beatIndex = 0; nextBeat = 0; startAt = performance.now(); playing = true; lastMovement = { left: 0, right: 0, stand: 0 }; updateStats(); $('time').textContent = DURATION; $('overlay').classList.add('hidden'); setStatus(chosen === 'camera' ? '姿态识别运行中' : '键盘模式 · J / L', true); try { audio ??= new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); startMusic(); } catch { }
@@ -405,9 +430,7 @@ async function enableCamera(testOnly = false) {
     const btn = $('cameraStart'); btn.disabled = true; btn.textContent = '正在打开摄像头…'; $('modalNote').classList.remove('error');
     try {
         if (!navigator.mediaDevices?.getUserMedia) throw Error('浏览器不支持摄像头，或当前页面不是 localhost / HTTPS。');
-        cameraStream?.getTracks().forEach(track => track.stop()); pose?.close();
-        cameraStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' } });
-        const v = $('camera'); v.srcObject = cameraStream; await v.play(); $('skeleton').width = v.videoWidth; $('skeleton').height = v.videoHeight; $('cameraTitle').textContent = 'LOADING AI…'; btn.textContent = '正在加载姿态模型…';
+        stopCamera(); pose?.close(); pose = null;
         showLoading('正在准备 AI 识别引擎', null, '首次启动需要加载 WASM 并初始化');
         await paintLoading();
         const vision = await FilesetResolver.forVisionTasks(resourceURL('mediapipe/wasm'));
@@ -416,14 +439,16 @@ async function enableCamera(testOnly = false) {
         await paintLoading();
         const opts = { baseOptions: { modelAssetBuffer: model, delegate: 'GPU' }, runningMode: 'VIDEO', numPoses: 1, minPoseDetectionConfidence: .55, minTrackingConfidence: .5 };
         try { pose = await PoseLandmarker.createFromOptions(vision, opts); } catch { showLoading('正在切换 CPU 识别', null, 'GPU 初始化未成功，正在使用兼容模式…'); await paintLoading(); opts.baseOptions.delegate = 'CPU'; pose = await PoseLandmarker.createFromOptions(vision, opts); }
-        $('cameraTitle').textContent = 'AI POSE ACTIVE'; if (testOnly) startStandTest(); else await beginGame('camera');
-    } catch (e) { showLoading('摄像头 / AI 准备失败', 0, e?.message || String(e)); $('modalNote').textContent = '摄像头启动失败：' + (e?.message || e) + '。可使用键盘试玩。'; $('modalNote').classList.add('error'); setStatus('摄像头不可用'); cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null; }
+        showLoading('正在打开摄像头', null, '请允许摄像头访问');
+        await openCamera();
+        if (testOnly) startStandTest(); else await beginGame('camera');
+    } catch (e) { showLoading('摄像头 / AI 准备失败', 0, e?.message || String(e)); $('modalNote').textContent = '摄像头启动失败：' + (e?.message || e) + '。可使用键盘试玩。'; $('modalNote').classList.add('error'); setStatus('摄像头不可用'); stopCamera(); }
     finally { cameraPreparing = false; if (!playing) lockStart(false); btn.textContent = '📷 摄像头开始'; }
 }
 $('cameraStart').onclick = () => enableCamera(false);
 $('standTestStart').onclick = () => enableCamera(true);
 $('testCalibrate').onclick = () => { testCalibrating = true; testDone = false; seatedUpper = null; seatSamples = 0; standBaseline = null; standFrames = 0; $('testRise').value = 0; $('testResult').textContent = '请保持坐稳，正在校准…'; };
-$('testExit').onclick = () => { standTesting = false; testCalibrating = false; mode = 'keyboard'; cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null; pose?.close(); pose = null; $('camera').srcObject = null; mirror.style.opacity = '0'; $('standTestPanel').hidden = true; document.body.classList.remove('stand-testing'); $('overlay').classList.remove('hidden'); lockStart(false); setStatus('测试已结束'); };
+$('testExit').onclick = () => { standTesting = false; testCalibrating = false; mode = 'keyboard'; stopCamera(); pose?.close(); pose = null; $('camera').srcObject = null; mirror.style.opacity = '0'; $('standTestPanel').hidden = true; document.body.classList.remove('stand-testing'); $('overlay').classList.remove('hidden'); lockStart(false); setStatus('测试已结束'); };
 $('demoStart').onclick = () => beginGame('keyboard');
 document.addEventListener('keydown', e => { if (playing && ['KeyP', 'Escape'].includes(e.code)) { e.preventDefault(); if (!e.repeat) togglePause(); return; } if (playing && ['Space', 'KeyJ', 'KeyL', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (e.repeat) return; if (e.code === 'Space') action('stand'); if (e.code === 'KeyJ' || e.code === 'ArrowLeft') action('left'); if (e.code === 'KeyL' || e.code === 'ArrowRight') action('right'); });
 const mirror = $('bodyMirror'), mirrorContext = mirror.getContext('2d'), mirrorDraw = new DrawingUtils(mirrorContext);
@@ -534,6 +559,7 @@ function processCamera(now) {
     } catch (e) { console.warn('Pose detection error', e); setStatus('姿态识别暂时失败'); }
 }
 function finish() {
+    stopCamera();
     paused = false; $('pauseButton').hidden = true; $('pauseOverlay').hidden = true;
     $('standCue').textContent = '';
     stopMusic(); lockStart(false);
@@ -574,6 +600,13 @@ function animate(now) {
 }
 requestAnimationFrame(animate);
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) return;
+    stopCamera();
+    if (playing && !paused) togglePause();
+    if (standTesting) $('testExit').click();
+});
+addEventListener('pagehide', stopCamera);
 addEventListener('beforeunload', () => { cameraStream?.getTracks().forEach(t => t.stop()); pose?.close(); });
 
     </script>
